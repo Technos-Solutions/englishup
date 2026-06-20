@@ -26,7 +26,20 @@ export function AuthProvider({ children }) {
 
   async function fetchProfile(userId) {
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    setProfile(data)
+    if (data) {
+      setProfile(data)
+    } else {
+      const { data: userData } = await supabase.auth.getUser()
+      const username = userData?.user?.user_metadata?.username
+        || userData?.user?.email?.split('@')[0]
+        || 'User'
+      const { data: newProfile } = await supabase
+        .from('profiles')
+        .upsert({ id: userId, username })
+        .select()
+        .single()
+      setProfile(newProfile)
+    }
     setLoading(false)
   }
 
