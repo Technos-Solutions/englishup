@@ -22,7 +22,7 @@ export default function Register() {
       options: { data: { username } },
     })
 
-    if (error) setError(error.message)
+    if (error) setError(error.message || error.msg || JSON.stringify(error))
     else navigate('/dashboard')
     setLoading(false)
   }
