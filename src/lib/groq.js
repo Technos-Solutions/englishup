@@ -5,7 +5,7 @@ const groq = new Groq({
   dangerouslyAllowBrowser: true,
 })
 
-const MODEL = 'llama-3.1-70b-versatile'
+const MODEL = 'llama-3.3-70b-versatile'
 
 export async function chatWithAI(messages) {
   const response = await groq.chat.completions.create({
