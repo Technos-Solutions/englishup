@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { speak } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { LISTENING_WORDS } from '../../data/scenarios'
+import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -15,8 +16,7 @@ function shuffle(arr) {
 
 export default function ListeningMatch() {
   const { profile, refreshProfile } = useAuth()
-  const level = profile?.level || 'A1'
-  const wordList = LISTENING_WORDS[level] || LISTENING_WORDS.A1
+  const wordList = LISTENING_WORDS
 
   const [queue, setQueue] = useState([])
   const [current, setCurrent] = useState(null)
@@ -51,12 +51,14 @@ export default function ListeningMatch() {
     if (selected || !hasSpoken) return
     setSelected(option)
     const correct = option === current.word
+    if (correct) playCorrect(); else playWrong()
     setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
     setTimeout(() => loadNext(queue), 1200)
   }
 
   async function finish() {
     setFinished(true)
+    playXP()
     const xp = Math.round(XP_REWARDS.listening_match * (score.correct / Math.max(score.total, 1)))
     const earned = Math.max(5, xp)
     await awardXP(profile.id, earned, 'listening_match')
