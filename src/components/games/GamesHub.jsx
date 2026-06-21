@@ -26,7 +26,7 @@ const GAMES = [
     icon: '⚡',
     title: 'Verb Blitz',
     description: 'Verb irregular + traducció → tria o di el passat. MC o oral.',
-    minLevel: 'A2',
+    minLevel: 'A1',
     color: 'bg-amber-50 border-amber-200',
     badge: 'bg-amber-100 text-amber-700',
   },
