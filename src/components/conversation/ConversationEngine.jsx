@@ -8,6 +8,7 @@ import { SCENARIOS } from '../../data/scenarios'
 import { getRecentVocabulary, saveVocabulary } from '../../lib/vocabulary'
 import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
+import TranslatableMessage from './TranslatableMessage'
 
 export default function ConversationEngine() {
   const { profile, refreshProfile } = useAuth()
@@ -256,7 +257,9 @@ export default function ConversationEngine() {
                 ? 'bg-indigo-600 text-white rounded-br-sm'
                 : 'bg-white text-gray-900 border border-gray-100 rounded-bl-sm shadow-sm'
             }`}>
-              {m.content}
+              {m.role === 'assistant'
+                ? <TranslatableMessage text={m.content} />
+                : m.content}
             </div>
             {m.correction?.has_error && (
               <div className="mt-1 max-w-xs sm:max-w-md bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 space-y-0.5">
