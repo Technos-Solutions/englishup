@@ -201,6 +201,12 @@ export default function VerbBlitz() {
               <p className="text-2xl font-bold text-emerald-700">{current.past}</p>
               <p className="text-xs text-gray-400 mt-2">Past participle: <span className="font-semibold">{current.participle}</span></p>
             </div>
+            {current.example && (
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-800">
+                <span className="font-semibold text-indigo-400 text-xs uppercase tracking-wide block mb-1">Example</span>
+                {current.example}
+              </div>
+            )}
             {heard && <p className="text-sm text-gray-500">You said: <span className="font-semibold italic">"{heard}"</span></p>}
 
             {mode === 'mc' ? (
