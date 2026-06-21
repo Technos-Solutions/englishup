@@ -32,6 +32,7 @@ Respond with ONLY valid JSON (no markdown, no extra text):
   "vocabulary_suggestions": [
     { "used": "...", "better": "...", "note": "..." }
   ],
+  "new_words": ["word1", "word2", "word3"],
   "model_sentence": "...",
   "overall_feedback": "..."
 }`
@@ -77,7 +78,11 @@ No markdown, no extra text.`
   }
 }
 
-export function buildConversationSystem(level, scenario) {
+export function buildConversationSystem(level, scenario, recentVocabulary = []) {
+  const vocabNote = recentVocabulary.length > 0
+    ? `\n- The student has recently used these words: ${recentVocabulary.slice(0, 25).join(', ')}. Naturally introduce NEW vocabulary they haven't seen yet, appropriate for level ${level}.`
+    : `\n- Introduce varied, rich vocabulary appropriate for level ${level}.`
+
   return `You are a friendly English conversation partner. The student's level is ${level}.
 Scenario: ${scenario.description}
 Role: ${scenario.aiRole}
@@ -87,5 +92,5 @@ Rules:
 - Match vocabulary complexity to level ${level}
 - Ask one follow-up question to keep conversation going
 - Be encouraging and natural
-- NEVER correct errors mid-conversation — just model correct English naturally`
+- NEVER correct errors mid-conversation — just model correct English naturally${vocabNote}`
 }

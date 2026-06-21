@@ -5,6 +5,7 @@ import { chatWithAI, analyzeConversation, buildConversationSystem, quickCorrecti
 import { speak, stopSpeaking } from '../../lib/speech'
 import { awardXP, calculateConversationXP } from '../../lib/xp'
 import { SCENARIOS } from '../../data/scenarios'
+import { getRecentVocabulary, saveVocabulary } from '../../lib/vocabulary'
 import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
 
@@ -23,9 +24,11 @@ export default function ConversationEngine() {
   const [analyzing, setAnalyzing] = useState(false)
   const bottomRef = useRef(null)
 
+  const order = ['A1','A2','B1','B2','C1','C2']
+  const userIdx = order.indexOf(profile?.level || 'A1')
+
   const availableScenarios = SCENARIOS.filter(s => {
-    const order = ['A1','A2','B1','B2','C1','C2']
-    const userIdx = order.indexOf(profile?.level || 'A1')
+    if (s.category === 'office-client' || s.category === 'office-provider') return true
     const scenarioIdx = order.indexOf(s.level)
     return scenarioIdx <= userIdx + 1
   })
@@ -56,7 +59,7 @@ export default function ConversationEngine() {
     setMessages(newMessages)
     setLoading(true)
 
-    const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario)
+    const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary())
     const groqMessages = [
       { role: 'system', content: systemPrompt },
       ...newMessages,
@@ -106,6 +109,7 @@ export default function ConversationEngine() {
       await refreshProfile()
       setXpEarned(xp)
       setAnalysis(result)
+      if (result.new_words?.length) saveVocabulary(result.new_words)
     } catch {
       navigate('/dashboard')
     }
