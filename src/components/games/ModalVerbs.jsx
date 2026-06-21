@@ -5,7 +5,14 @@ import { awardXP } from '../../lib/xp'
 import { MODAL_EXERCISES } from '../../data/modals'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
-function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 export default function ModalVerbs() {
   const { profile, refreshProfile } = useAuth()

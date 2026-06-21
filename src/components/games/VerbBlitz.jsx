@@ -5,7 +5,14 @@ import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { IRREGULAR_VERBS } from '../../data/verbs'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
-function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 function getOptions(correct, pool) {
   const wrong = shuffle(pool.filter(v => v.past !== correct)).slice(0, 3).map(v => v.past)

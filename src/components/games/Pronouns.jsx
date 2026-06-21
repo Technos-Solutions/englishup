@@ -5,7 +5,14 @@ import { awardXP } from '../../lib/xp'
 import { PRONOUNS, PRONOUN_CATEGORIES } from '../../data/pronouns'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
-function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 function getOptions(correct, pool) {
   const wrong = shuffle(pool.filter(p => p.en !== correct)).slice(0, 3).map(p => p.en)

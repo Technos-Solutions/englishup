@@ -4,7 +4,14 @@ import { speak, startListening, scorePhonetic, isSpeechSupported } from '../../l
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { SHADOWING_SENTENCES } from '../../data/scenarios'
 
-function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 const STATES = { IDLE: 'idle', SPEAKING: 'speaking', LISTENING: 'listening', RESULT: 'result', DONE: 'done' }
 
