@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { chatWithAI, analyzeConversation, buildConversationSystem } from '../../lib/groq'
+import { chatWithAI, analyzeConversation, buildConversationSystem, quickCorrection } from '../../lib/groq'
 import { speak, stopSpeaking } from '../../lib/speech'
 import { awardXP, calculateConversationXP } from '../../lib/xp'
 import { SCENARIOS } from '../../data/scenarios'
@@ -13,6 +13,8 @@ export default function ConversationEngine() {
   const navigate = useNavigate()
   const [scenario, setScenario] = useState(null)
   const [tab, setTab] = useState('general')
+  const [realtimeMode, setRealtimeMode] = useState(false)
+  const [pendingMode, setPendingMode] = useState(false)
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -33,6 +35,12 @@ export default function ConversationEngine() {
   }, [messages])
 
   async function startScenario(s) {
+    setPendingMode(s)
+  }
+
+  function confirmStart(s, withRealtime) {
+    setRealtimeMode(withRealtime)
+    setPendingMode(false)
     setScenario(s)
     const aiMessage = { role: 'assistant', content: s.starter }
     setMessages([aiMessage])
@@ -55,7 +63,15 @@ export default function ConversationEngine() {
     ]
 
     try {
-      const reply = await chatWithAI(groqMessages)
+      const [reply, correction] = await Promise.all([
+        chatWithAI(groqMessages),
+        realtimeMode ? quickCorrection(text, profile?.level || 'A1') : Promise.resolve(null),
+      ])
+      if (correction?.has_error) {
+        setMessages(prev => prev.map((m, i) =>
+          i === prev.length - 1 ? { ...m, correction } : m
+        ))
+      }
       const aiMsg = { role: 'assistant', content: reply }
       setMessages(prev => [...prev, aiMsg])
       if (inputMode === 'voice') speak(reply)
@@ -94,6 +110,43 @@ export default function ConversationEngine() {
       navigate('/dashboard')
     }
     setAnalyzing(false)
+  }
+
+  if (pendingMode) {
+    const s = pendingMode
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center space-y-6">
+          <div className="text-5xl">{s.icon}</div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{s.title}</h2>
+            <p className="text-gray-500 text-sm mt-1">{s.description}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-700 mb-4">Correction mode:</p>
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={() => confirmStart(s, false)}
+                className="border-2 border-gray-200 hover:border-indigo-400 rounded-xl p-4 text-left transition-all hover:bg-indigo-50"
+              >
+                <div className="font-bold text-gray-800">📊 Summary at the end</div>
+                <div className="text-sm text-gray-500 mt-0.5">Full correction report after the conversation (recommended)</div>
+              </button>
+              <button
+                onClick={() => confirmStart(s, true)}
+                className="border-2 border-gray-200 hover:border-amber-400 rounded-xl p-4 text-left transition-all hover:bg-amber-50"
+              >
+                <div className="font-bold text-gray-800">⚡ Real-time hints</div>
+                <div className="text-sm text-gray-500 mt-0.5">See corrections instantly after each message + summary at the end</div>
+              </button>
+            </div>
+          </div>
+          <button onClick={() => setPendingMode(false)} className="text-sm text-gray-400 hover:text-gray-600">
+            ← Back
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (!scenario) {
@@ -195,7 +248,7 @@ export default function ConversationEngine() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div className={`max-w-xs sm:max-w-md rounded-2xl px-4 py-3 text-sm ${
               m.role === 'user'
                 ? 'bg-indigo-600 text-white rounded-br-sm'
@@ -203,6 +256,12 @@ export default function ConversationEngine() {
             }`}>
               {m.content}
             </div>
+            {m.correction?.has_error && (
+              <div className="mt-1 max-w-xs sm:max-w-md bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 space-y-0.5">
+                <div><span className="line-through text-red-400">{m.correction.original}</span> → <span className="font-semibold text-green-700">{m.correction.correction}</span></div>
+                <div className="text-amber-600">{m.correction.tip}</div>
+              </div>
+            )}
           </div>
         ))}
         {loading && (

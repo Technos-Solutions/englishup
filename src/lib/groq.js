@@ -56,6 +56,27 @@ Respond with ONLY valid JSON (no markdown, no extra text):
   }
 }
 
+export async function quickCorrection(userMessage, level) {
+  const prompt = `English teacher checking a student (level ${level}) message: "${userMessage}"
+If there is a grammar or vocabulary error, return ONLY this JSON:
+{"has_error": true, "original": "...", "correction": "...", "tip": "..."}
+If the message is correct, return ONLY: {"has_error": false}
+No markdown, no extra text.`
+
+  const response = await groq.chat.completions.create({
+    model: MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.1,
+    max_tokens: 150,
+  })
+
+  try {
+    return JSON.parse(response.choices[0].message.content)
+  } catch {
+    return { has_error: false }
+  }
+}
+
 export function buildConversationSystem(level, scenario) {
   return `You are a friendly English conversation partner. The student's level is ${level}.
 Scenario: ${scenario.description}
