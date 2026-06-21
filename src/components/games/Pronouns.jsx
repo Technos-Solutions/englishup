@@ -4,6 +4,7 @@ import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { PRONOUNS, PRONOUN_CATEGORIES } from '../../data/pronouns'
 import { LEVELS } from '../../data/levels'
+import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
@@ -50,7 +51,7 @@ export default function Pronouns() {
     if (selected) return
     setSelected(opt)
     setRevealed(true)
-    if (opt === current.en) speak(opt)
+    if (opt === current.en) { playCorrect(); speak(opt) } else playWrong()
   }
 
   function tryListen() {
@@ -81,6 +82,7 @@ export default function Pronouns() {
 
   async function endGame(lastCorrect) {
     setFinished(true)
+    playXP()
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(20 * (correct / total)))
@@ -229,8 +231,8 @@ export default function Pronouns() {
               </button>
             ) : (
               <div className="flex gap-3">
-                <button onClick={() => next(false)} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-xl">✗ Wrong</button>
-                <button onClick={() => next(true)} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl">✓ Right</button>
+                <button onClick={() => { playWrong(); next(false) }} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-xl">✗ Wrong</button>
+                <button onClick={() => { playCorrect(); next(true) }} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl">✓ Right</button>
               </div>
             )}
           </div>

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { IRREGULAR_VERBS } from '../../data/verbs'
 import { LEVELS } from '../../data/levels'
+import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
@@ -48,6 +49,7 @@ export default function VerbBlitz() {
     if (selected) return
     setSelected(opt)
     setRevealed(true)
+    if (opt === current.past) playCorrect(); else playWrong()
   }
 
   function tryListen() {
@@ -77,6 +79,7 @@ export default function VerbBlitz() {
 
   async function endGame(lastCorrect) {
     setFinished(true)
+    playXP()
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(XP_REWARDS.verb_blitz * (correct / total)))
@@ -206,8 +209,8 @@ export default function VerbBlitz() {
               </button>
             ) : (
               <div className="flex gap-3">
-                <button onClick={() => next(false)} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-xl">✗ Wrong</button>
-                <button onClick={() => next(true)} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl">✓ Right</button>
+                <button onClick={() => { playWrong(); next(false) }} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-xl">✗ Wrong</button>
+                <button onClick={() => { playCorrect(); next(true) }} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl">✓ Right</button>
               </div>
             )}
           </div>
