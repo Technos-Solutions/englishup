@@ -130,6 +130,13 @@ export default function ListeningMatch() {
         })}
       </div>
 
+      {selected && current.example && (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-800">
+          <span className="font-semibold text-indigo-400 text-xs uppercase tracking-wide block mb-1">Example</span>
+          {current.example}
+        </div>
+      )}
+
       <div className="w-full bg-gray-100 rounded-full h-2">
         <div
           className="bg-indigo-500 h-2 rounded-full transition-all"
