@@ -3,7 +3,6 @@ import { useAuth } from '../../context/AuthContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { PRONOUNS, PRONOUN_CATEGORIES } from '../../data/pronouns'
-import { LEVELS } from '../../data/levels'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
@@ -15,12 +14,7 @@ function getOptions(correct, pool) {
 
 export default function Pronouns() {
   const { profile, refreshProfile } = useAuth()
-  const userLevelIdx = LEVELS.findIndex(l => l.code === (profile?.level || 'A1'))
-
-  const eligible = PRONOUNS.filter(p => {
-    const pIdx = LEVELS.findIndex(l => l.code === p.level)
-    return pIdx <= userLevelIdx
-  })
+  const eligible = PRONOUNS
 
   const [mode, setMode] = useState(null)
   const [category, setCategory] = useState('all')

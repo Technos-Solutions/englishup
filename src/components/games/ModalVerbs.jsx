@@ -3,19 +3,13 @@ import { useAuth } from '../../context/AuthContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { MODAL_EXERCISES } from '../../data/modals'
-import { LEVELS } from '../../data/levels'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
 export default function ModalVerbs() {
   const { profile, refreshProfile } = useAuth()
-  const userLevelIdx = LEVELS.findIndex(l => l.code === (profile?.level || 'A1'))
-
-  const eligible = MODAL_EXERCISES.filter(e => {
-    const eIdx = LEVELS.findIndex(l => l.code === e.level)
-    return eIdx <= userLevelIdx
-  })
+  const eligible = MODAL_EXERCISES
 
   const [mode, setMode] = useState(null)
   const [showCat, setShowCat] = useState(true)

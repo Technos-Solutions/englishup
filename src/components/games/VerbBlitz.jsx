@@ -3,7 +3,6 @@ import { useAuth } from '../../context/AuthContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { IRREGULAR_VERBS } from '../../data/verbs'
-import { LEVELS } from '../../data/levels'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
@@ -15,12 +14,7 @@ function getOptions(correct, pool) {
 
 export default function VerbBlitz() {
   const { profile, refreshProfile } = useAuth()
-  const userLevelIdx = LEVELS.findIndex(l => l.code === (profile?.level || 'A1'))
-
-  const eligibleVerbs = IRREGULAR_VERBS.filter(v => {
-    const vIdx = LEVELS.findIndex(l => l.code === v.level)
-    return vIdx <= userLevelIdx
-  })
+  const eligibleVerbs = IRREGULAR_VERBS
 
   const [mode, setMode] = useState(null) // 'mc' | 'oral'
   const [queue, setQueue] = useState([])
