@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { speak } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { LISTENING_WORDS } from '../../data/scenarios'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
+import { translateWord } from '../../lib/groq'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -12,6 +13,62 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]]
   }
   return a
+}
+
+function OptionButton({ opt, style, onClick, disabled }) {
+  const [tooltip, setTooltip] = useState(null)
+  const [pos, setPos] = useState({ x: 0, y: 0, above: false })
+  const [visible, setVisible] = useState(false)
+  const timerRef = useRef(null)
+  const btnRef = useRef(null)
+
+  function handleEnter() {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      const above = r.top > 200
+      setPos({ x: r.left + r.width / 2, y: above ? r.top - 8 : r.bottom + 8, above })
+    }
+    setVisible(true)
+    if (tooltip) return
+    timerRef.current = setTimeout(async () => {
+      try { setTooltip(await translateWord(opt, '')) } catch {}
+    }, 250)
+  }
+
+  function handleLeave() {
+    clearTimeout(timerRef.current)
+    setVisible(false)
+  }
+
+  return (
+    <div className="relative">
+      <button
+        ref={btnRef}
+        onClick={onClick}
+        disabled={disabled}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        className={`${style} w-full rounded-xl py-4 font-semibold text-lg transition-all disabled:cursor-not-allowed`}
+      >
+        {opt}
+      </button>
+      {visible && tooltip && (
+        <span
+          style={{
+            position: 'fixed',
+            left: `${pos.x}px`,
+            top: pos.above ? undefined : `${pos.y}px`,
+            bottom: pos.above ? `${window.innerHeight - pos.y}px` : undefined,
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+          }}
+          className="px-2.5 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap shadow-lg pointer-events-none"
+        >
+          {tooltip}
+        </span>
+      )}
+    </div>
+  )
 }
 
 export default function ListeningMatch() {
@@ -53,7 +110,7 @@ export default function ListeningMatch() {
     const correct = option === current.word
     if (correct) playCorrect(); else playWrong()
     setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
-    setTimeout(() => loadNext(queue), 1200)
+    setTimeout(() => loadNext(queue), 1500)
   }
 
   async function finish() {
@@ -89,7 +146,7 @@ export default function ListeningMatch() {
     <div className="max-w-md mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">👂 Listening Match</h2>
-        <span className="text-sm text-gray-400">{score.total + 1} / {wordList.slice(0, 8).length}</span>
+        <span className="text-sm text-gray-400">{score.total + 1} / 8</span>
       </div>
 
       <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
@@ -107,6 +164,9 @@ export default function ListeningMatch() {
         {!hasSpoken && (
           <p className="text-xs text-indigo-400 mt-3">👆 Listen first, then pick</p>
         )}
+        {hasSpoken && !selected && (
+          <p className="text-xs text-gray-400 mt-3">Passa el cursor per veure la traducció</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -118,24 +178,16 @@ export default function ListeningMatch() {
             else style = 'bg-gray-50 border-gray-200 text-gray-400'
           }
           return (
-            <button
+            <OptionButton
               key={opt}
+              opt={opt}
+              style={style}
               onClick={() => handleSelect(opt)}
               disabled={!hasSpoken || !!selected}
-              className={`${style} rounded-xl py-4 font-semibold text-lg transition-all disabled:cursor-not-allowed`}
-            >
-              {opt}
-            </button>
+            />
           )
         })}
       </div>
-
-      {selected && current.example && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-800">
-          <span className="font-semibold text-indigo-400 text-xs uppercase tracking-wide block mb-1">Example</span>
-          {current.example}
-        </div>
-      )}
 
       <div className="w-full bg-gray-100 rounded-full h-2">
         <div
