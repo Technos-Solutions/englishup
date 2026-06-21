@@ -1,9 +1,38 @@
+import { useNavigate } from 'react-router-dom'
+import { TAG_TO_TOPIC } from '../../data/grammar'
+
+function detectGrammarTopics(errors) {
+  if (!errors?.length) return []
+  const found = new Set()
+  for (const e of errors) {
+    const text = `${e.original} ${e.correction} ${e.explanation}`.toLowerCase()
+    if (text.includes(' am ') || text.includes(' is ') || text.includes(' are ') ||
+        text.includes(' was ') || text.includes(' were ') || text.includes("'m ") ||
+        text.includes("to be")) found.add('to-be')
+    if (text.includes(' have ') || text.includes(' has ') || text.includes(' had ') ||
+        text.includes("to have")) found.add('to-have')
+    if (text.includes('present perfect') || text.includes("'ve ") || text.includes("'s ") ||
+        text.includes(' haven') || text.includes(' hasn')) found.add('present-perfect')
+    if (text.includes('past simple') || text.includes('past tense') ||
+        text.includes("didn't") || text.includes('did not')) found.add('past-simple')
+    if (text.includes('present simple') || text.includes("don't") || text.includes("doesn't")) found.add('present-simple')
+    if (text.includes('pronoun') || text.includes(' him ') || text.includes(' her ') ||
+        text.includes(' their ') || text.includes(' his ')) found.add('pronouns')
+    if (text.includes('modal') || text.includes(' can ') || text.includes(' should ') ||
+        text.includes(' must ') || text.includes(' would ') || text.includes(' might ')) found.add('modal-verbs')
+  }
+  return [...found].filter(tag => TAG_TO_TOPIC[tag])
+}
+
 export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
+  const navigate = useNavigate()
   if (!analysis) return null
 
   const scoreColor =
     analysis.fluency_score >= 80 ? 'text-emerald-600' :
     analysis.fluency_score >= 60 ? 'text-amber-600' : 'text-red-500'
+
+  const grammarSuggestions = detectGrammarTopics(analysis.errors)
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -21,13 +50,9 @@ export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
             <p className={`text-5xl font-bold ${scoreColor}`}>{analysis.fluency_score}</p>
             <p className="text-sm text-gray-400 mt-1">out of 100</p>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-              <div
-                className="h-2 rounded-full transition-all duration-1000"
-                style={{
-                  width: `${analysis.fluency_score}%`,
-                  backgroundColor: analysis.fluency_score >= 80 ? '#10B981' : analysis.fluency_score >= 60 ? '#F59E0B' : '#EF4444'
-                }}
-              />
+              <div className="h-2 rounded-full transition-all duration-1000"
+                style={{ width: `${analysis.fluency_score}%`,
+                  backgroundColor: analysis.fluency_score >= 80 ? '#10B981' : analysis.fluency_score >= 60 ? '#F59E0B' : '#EF4444' }} />
             </div>
           </div>
 
@@ -62,6 +87,26 @@ export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
             </div>
           )}
 
+          {/* Grammar Focus suggestion — optional */}
+          {grammarSuggestions.length > 0 && (
+            <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 space-y-2">
+              <p className="text-sm font-semibold text-violet-700">🎯 Reforça la gramàtica</p>
+              <p className="text-xs text-violet-600">Has tingut errors en aquests punts. Vols practicar-los?</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {grammarSuggestions.map(tag => {
+                  const topic = TAG_TO_TOPIC[tag]
+                  return (
+                    <button key={tag}
+                      onClick={() => { onClose(); navigate(`/grammar?topic=${tag}`) }}
+                      className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors">
+                      {topic.icon} {topic.title}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Vocabulary suggestions */}
           {analysis.vocabulary_suggestions?.length > 0 && (
             <div>
@@ -88,10 +133,8 @@ export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
             </div>
           )}
 
-          <button
-            onClick={onClose}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors"
-          >
+          <button onClick={onClose}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors">
             Continue learning 🚀
           </button>
         </div>

@@ -11,6 +11,7 @@ import ShadowingBlitz from './components/games/ShadowingBlitz'
 import VerbBlitz from './components/games/VerbBlitz'
 import ModalVerbs from './components/games/ModalVerbs'
 import Pronouns from './components/games/Pronouns'
+import GrammarFocus from './components/grammar/GrammarFocus'
 import Ranking from './components/ranking/Ranking'
 import Trophies from './components/prizes/Trophies'
 
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/games/verbs"        element={<ProtectedRoute><VerbBlitz /></ProtectedRoute>} />
           <Route path="/games/modals"       element={<ProtectedRoute><ModalVerbs /></ProtectedRoute>} />
           <Route path="/games/pronouns"     element={<ProtectedRoute><Pronouns /></ProtectedRoute>} />
+          <Route path="/grammar"            element={<ProtectedRoute><GrammarFocus /></ProtectedRoute>} />
           <Route path="/ranking"            element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
           <Route path="/trophies"           element={<ProtectedRoute><Trophies /></ProtectedRoute>} />
 

@@ -9,11 +9,12 @@ export default function Navbar() {
   const level = profile ? getLevelFromXP(profile.xp) : null
 
   const links = [
-    { to: '/dashboard', label: 'Home',       icon: '🏠' },
-    { to: '/games',     label: 'Games',      icon: '🎮' },
-    { to: '/conversation', label: 'Talk',   icon: '🎙️' },
-    { to: '/ranking',   label: 'Ranking',    icon: '🏆' },
-    { to: '/trophies',  label: 'Trophies',   icon: '🥇' },
+    { to: '/dashboard',   label: 'Home',     icon: '🏠' },
+    { to: '/games',       label: 'Games',    icon: '🎮' },
+    { to: '/conversation',label: 'Talk',     icon: '🎙️' },
+    { to: '/grammar',     label: 'Grammar',  icon: '📚' },
+    { to: '/ranking',     label: 'Ranking',  icon: '🏆' },
+    { to: '/trophies',    label: 'Trophies', icon: '🥇' },
   ]
 
   return (
