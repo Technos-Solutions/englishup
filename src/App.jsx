@@ -9,6 +9,8 @@ import GamesHub from './components/games/GamesHub'
 import ListeningMatch from './components/games/ListeningMatch'
 import ShadowingBlitz from './components/games/ShadowingBlitz'
 import VerbBlitz from './components/games/VerbBlitz'
+import ModalVerbs from './components/games/ModalVerbs'
+import Pronouns from './components/games/Pronouns'
 import Ranking from './components/ranking/Ranking'
 import Trophies from './components/prizes/Trophies'
 
@@ -44,6 +46,8 @@ export default function App() {
           <Route path="/games/listening"    element={<ProtectedRoute><ListeningMatch /></ProtectedRoute>} />
           <Route path="/games/shadowing"    element={<ProtectedRoute><ShadowingBlitz /></ProtectedRoute>} />
           <Route path="/games/verbs"        element={<ProtectedRoute><VerbBlitz /></ProtectedRoute>} />
+          <Route path="/games/modals"       element={<ProtectedRoute><ModalVerbs /></ProtectedRoute>} />
+          <Route path="/games/pronouns"     element={<ProtectedRoute><Pronouns /></ProtectedRoute>} />
           <Route path="/ranking"            element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
           <Route path="/trophies"           element={<ProtectedRoute><Trophies /></ProtectedRoute>} />
 

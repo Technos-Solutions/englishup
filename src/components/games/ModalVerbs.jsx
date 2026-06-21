@@ -1,53 +1,46 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
-import { awardXP, XP_REWARDS } from '../../lib/xp'
-import { IRREGULAR_VERBS } from '../../data/verbs'
+import { awardXP } from '../../lib/xp'
+import { MODAL_EXERCISES } from '../../data/modals'
 import { LEVELS } from '../../data/levels'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
-function getOptions(correct, pool) {
-  const wrong = shuffle(pool.filter(v => v.past !== correct)).slice(0, 3).map(v => v.past)
-  return shuffle([correct, ...wrong])
-}
-
-export default function VerbBlitz() {
+export default function ModalVerbs() {
   const { profile, refreshProfile } = useAuth()
   const userLevelIdx = LEVELS.findIndex(l => l.code === (profile?.level || 'A1'))
 
-  const eligibleVerbs = IRREGULAR_VERBS.filter(v => {
-    const vIdx = LEVELS.findIndex(l => l.code === v.level)
-    return vIdx <= userLevelIdx
+  const eligible = MODAL_EXERCISES.filter(e => {
+    const eIdx = LEVELS.findIndex(l => l.code === e.level)
+    return eIdx <= userLevelIdx
   })
 
-  const [mode, setMode] = useState(null) // 'mc' | 'oral'
+  const [mode, setMode] = useState(null)
+  const [showCat, setShowCat] = useState(true)
   const [queue, setQueue] = useState([])
   const [current, setCurrent] = useState(null)
-  const [options, setOptions] = useState([])
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
-  const [score, setScore] = useState({ correct: 0, wrong: 0 })
   const [listening, setListening] = useState(false)
   const [heard, setHeard] = useState('')
+  const [score, setScore] = useState({ correct: 0, wrong: 0 })
   const [finished, setFinished] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
-  const roundsTotal = 10
+  const roundsTotal = Math.min(10, eligible.length)
 
   function startGame(selectedMode) {
-    const q = shuffle(eligibleVerbs).slice(0, roundsTotal)
+    const q = shuffle(eligible).slice(0, roundsTotal)
     setMode(selectedMode)
     setQueue(q)
     setCurrent(q[0])
-    setOptions(getOptions(q[0].past, eligibleVerbs))
   }
 
-  function playVerb() { if (current) speak(current.base) }
-
-  function handleMCSelect(opt) {
+  function handleSelect(opt) {
     if (selected) return
     setSelected(opt)
     setRevealed(true)
+    if (opt.toLowerCase() === current.answer.toLowerCase()) speak(opt)
   }
 
   function tryListen() {
@@ -69,7 +62,6 @@ export default function VerbBlitz() {
     if (rest.length === 0) return endGame(correct)
     setQueue(rest)
     setCurrent(rest[0])
-    setOptions(getOptions(rest[0].past, eligibleVerbs))
     setSelected(null)
     setRevealed(false)
     setHeard('')
@@ -79,29 +71,41 @@ export default function VerbBlitz() {
     setFinished(true)
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
-    const xp = Math.max(3, Math.round(XP_REWARDS.verb_blitz * (correct / total)))
-    await awardXP(profile.id, xp, 'verb_blitz')
+    const xp = Math.max(3, Math.round(25 * (correct / total)))
+    await awardXP(profile.id, xp, 'modal_verbs')
     await refreshProfile()
     setXpEarned(xp)
   }
 
-  // Mode selection
+  function renderSentence(sentence, answer, isRevealed) {
+    return sentence.split('___').map((part, i, arr) => (
+      <span key={i}>
+        {part}
+        {i < arr.length - 1 && (
+          <span className={`font-bold underline underline-offset-4 ${isRevealed ? 'text-emerald-600' : 'text-indigo-400'}`}>
+            {isRevealed ? answer : '___'}
+          </span>
+        )}
+      </span>
+    ))
+  }
+
   if (!mode) {
     return (
       <div className="max-w-md mx-auto text-center space-y-6 py-8">
-        <div className="text-5xl">⚡</div>
-        <h1 className="text-2xl font-bold text-gray-900">Verb Blitz</h1>
-        <p className="text-gray-500">Irregular verbs — choose your mode</p>
+        <div className="text-5xl">🔧</div>
+        <h1 className="text-2xl font-bold text-gray-900">Modal Verbs</h1>
+        <p className="text-gray-500">can · should · must · would · might · could</p>
         <div className="grid grid-cols-1 gap-3">
           <button onClick={() => startGame('mc')}
             className="border-2 border-indigo-200 hover:border-indigo-400 bg-indigo-50 hover:bg-indigo-100 rounded-xl p-5 text-left transition-all">
             <div className="font-bold text-indigo-800 text-lg">📋 Multiple Choice</div>
-            <div className="text-sm text-indigo-600 mt-1">Tria la forma correcta entre 4 opcions. Ideal per aprendre.</div>
+            <div className="text-sm text-indigo-600 mt-1">Tria el modal correcte per completar la frase.</div>
           </button>
           <button onClick={() => startGame('oral')}
             className="border-2 border-emerald-200 hover:border-emerald-400 bg-emerald-50 hover:bg-emerald-100 rounded-xl p-5 text-left transition-all">
             <div className="font-bold text-emerald-800 text-lg">🎙️ Oral</div>
-            <div className="text-sm text-emerald-600 mt-1">Di la resposta en veu alta. Més difícil i més efectiu.</div>
+            <div className="text-sm text-emerald-600 mt-1">Di el modal en veu alta.</div>
           </button>
         </div>
       </div>
@@ -111,8 +115,8 @@ export default function VerbBlitz() {
   if (finished) {
     return (
       <div className="text-center space-y-4 py-12 max-w-md mx-auto">
-        <div className="text-6xl">⚡</div>
-        <h2 className="text-2xl font-bold text-gray-900">Verb Blitz done!</h2>
+        <div className="text-6xl">🔧</div>
+        <h2 className="text-2xl font-bold text-gray-900">Modal Verbs done!</h2>
         <p className="text-gray-500">{score.correct} correct out of {roundsTotal}</p>
         <p className="text-amber-500 font-bold text-xl">+{xpEarned} XP ⭐</p>
         <button onClick={() => { setMode(null); setFinished(false); setScore({ correct: 0, wrong: 0 }) }}
@@ -126,11 +130,12 @@ export default function VerbBlitz() {
   if (!current) return <div className="text-center text-gray-400 py-12">Loading…</div>
 
   const roundNum = roundsTotal - queue.length + 1
+  const isCorrect = selected?.toLowerCase() === current.answer.toLowerCase()
 
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">⚡ Verb Blitz</h2>
+        <h2 className="text-xl font-bold text-gray-900">🔧 Modal Verbs</h2>
         <div className="flex gap-3 text-sm">
           <span className="text-emerald-600 font-bold">✓ {score.correct}</span>
           <span className="text-red-500 font-bold">✗ {score.wrong}</span>
@@ -138,52 +143,63 @@ export default function VerbBlitz() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center space-y-4">
-        <p className="text-sm text-gray-400">Past tense of…</p>
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+        <p className="text-sm text-gray-400 text-center">Complete the sentence:</p>
 
-        <button onClick={playVerb} className="group">
-          <div className="text-5xl font-bold text-indigo-700 group-hover:text-indigo-900 transition-colors">
-            {current.base}
-          </div>
-          <div className="text-sm text-gray-400 mt-1">{current.translation}</div>
-          <p className="text-xs text-gray-300 group-hover:text-gray-400 mt-1">🔊 tap to hear</p>
-        </button>
+        <p className="text-lg font-medium text-gray-900 text-center leading-relaxed">
+          {renderSentence(current.sentence, current.answer, revealed)}
+        </p>
 
-        {/* Multiple choice */}
-        {mode === 'mc' && (
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setShowCat(v => !v)}
+            className="text-xs text-indigo-400 hover:text-indigo-600"
+          >
+            {showCat ? '🙈 Hide' : '🌍 Show'} translation
+          </button>
+          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{current.level}</span>
+        </div>
+
+        {showCat && (
+          <p className="text-sm text-gray-400 italic text-center bg-gray-50 rounded-lg px-3 py-2">
+            {current.cat}
+          </p>
+        )}
+
+        {/* MC Options */}
+        {mode === 'mc' && !revealed && (
           <div className="grid grid-cols-2 gap-3 pt-2">
-            {options.map(opt => {
-              const isCorrect = opt === current.past
-              const isSelected = opt === selected
+            {current.options.map(opt => (
+              <button key={opt} onClick={() => handleSelect(opt)}
+                className="border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 rounded-xl py-3 font-semibold text-sm text-gray-700 transition-all">
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {mode === 'mc' && revealed && (
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {current.options.map(opt => {
+              const isAns = opt.toLowerCase() === current.answer.toLowerCase()
+              const isSel = opt === selected
               let cls = 'border-2 rounded-xl py-3 font-semibold text-sm transition-all '
-              if (!selected) {
-                cls += 'border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 text-gray-700'
-              } else if (isCorrect) {
-                cls += 'border-emerald-500 bg-emerald-50 text-emerald-700'
-              } else if (isSelected) {
-                cls += 'border-red-400 bg-red-50 text-red-600'
-              } else {
-                cls += 'border-gray-100 bg-gray-50 text-gray-400'
-              }
-              return (
-                <button key={opt} onClick={() => handleMCSelect(opt)} className={cls}>
-                  {opt}
-                  {selected && isCorrect && ' ✓'}
-                  {selected && isSelected && !isCorrect && ' ✗'}
-                </button>
-              )
+              if (isAns) cls += 'border-emerald-500 bg-emerald-50 text-emerald-700'
+              else if (isSel) cls += 'border-red-400 bg-red-50 text-red-600'
+              else cls += 'border-gray-100 bg-gray-50 text-gray-400'
+              return <div key={opt} className={cls}>{opt}{isAns ? ' ✓' : (isSel ? ' ✗' : '')}</div>
             })}
           </div>
         )}
 
-        {/* Oral mode */}
+        {/* Oral */}
         {mode === 'oral' && !revealed && (
           <div className="space-y-3 pt-2">
             <button onClick={tryListen} disabled={listening}
               className={`w-full py-3 rounded-xl font-semibold transition-colors ${listening ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>
-              {listening ? '🎙️ Listening…' : '🎙️ Say the answer'}
+              {listening ? '🎙️ Listening…' : '🎙️ Say the modal'}
             </button>
-            <button onClick={() => setRevealed(true)} className="text-sm text-gray-400 hover:text-gray-600">
+            <button onClick={() => setRevealed(true)} className="text-sm text-gray-400 hover:text-gray-600 w-full text-center">
               Show answer
             </button>
           </div>
@@ -191,17 +207,16 @@ export default function VerbBlitz() {
 
         {/* Result */}
         {revealed && (
-          <div className="space-y-4 pt-2">
-            <div className="bg-emerald-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Past simple</p>
-              <p className="text-2xl font-bold text-emerald-700">{current.past}</p>
-              <p className="text-xs text-gray-400 mt-2">Past participle: <span className="font-semibold">{current.participle}</span></p>
+          <div className="space-y-3 pt-2">
+            <div className={`rounded-xl p-3 text-sm ${isCorrect ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+              <p className="font-semibold">{isCorrect ? '✓ Correct!' : `✗ Answer: ${current.answer}`}</p>
+              <p className="mt-1 text-xs">{current.tip}</p>
             </div>
-            {heard && <p className="text-sm text-gray-500">You said: <span className="font-semibold italic">"{heard}"</span></p>}
+            {heard && <p className="text-sm text-gray-500 text-center">You said: <span className="font-semibold italic">"{heard}"</span></p>}
 
             {mode === 'mc' ? (
-              <button onClick={() => next(selected === current.past)}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors">
+              <button onClick={() => next(isCorrect)}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl">
                 Next →
               </button>
             ) : (
