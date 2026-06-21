@@ -27,6 +27,15 @@ export const SCENARIOS = [
     starter: "Hello! You look a bit lost. Can I help you?",
   },
   {
+    id: 'meet-someone',
+    icon: '🤝',
+    title: 'Meet Someone New',
+    description: 'Get to know a new person — job, life, hobbies, family',
+    level: 'A2',
+    aiRole: 'a friendly person you have just met at a social event, curious and open. You have your own life: you work as a marketing manager, live in Manchester, enjoy hiking and cooking, and have a younger sister. Ask genuine questions back — this is a real two-way conversation.',
+    starter: "Hi! I don't think we've met before — I'm Alex. Are you enjoying the evening? I have to say, I never know what to say at these things! What do you do for a living?",
+  },
+  {
     id: 'airport',
     icon: '✈️',
     title: 'At the Airport',
