@@ -12,6 +12,7 @@ export default function ConversationEngine() {
   const { profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const [scenario, setScenario] = useState(null)
+  const [tab, setTab] = useState('general')
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -116,30 +117,54 @@ export default function ConversationEngine() {
     )
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">🎙️ Choose a Scenario</h1>
           <p className="text-gray-500">Pick a situation to practice. The AI will play the other role.</p>
         </div>
 
-        {general.length > 0 && (
-          <div>
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">General</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{general.map(ScenarioCard)}</div>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setTab('general')}
+            className={`px-5 py-2 rounded-xl font-semibold text-sm transition-colors ${
+              tab === 'general'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            🌍 General
+          </button>
+          <button
+            onClick={() => setTab('empresa')}
+            className={`px-5 py-2 rounded-xl font-semibold text-sm transition-colors ${
+              tab === 'empresa'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            🏢 Empresa
+          </button>
+        </div>
+
+        {tab === 'general' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{general.map(ScenarioCard)}</div>
         )}
 
-        {asClient.length > 0 && (
-          <div>
-            <h2 className="text-sm font-semibold text-blue-500 uppercase tracking-wider mb-3">🧑‍💼 Office — As Client</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{asClient.map(ScenarioCard)}</div>
-          </div>
-        )}
-
-        {asProvider.length > 0 && (
-          <div>
-            <h2 className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">🏭 Office — As Provider</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{asProvider.map(ScenarioCard)}</div>
+        {tab === 'empresa' && (
+          <div className="space-y-6">
+            {asClient.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-blue-500 uppercase tracking-wider mb-3">🧑‍💼 As Client</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{asClient.map(ScenarioCard)}</div>
+              </div>
+            )}
+            {asProvider.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">🏭 As Provider</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{asProvider.map(ScenarioCard)}</div>
+              </div>
+            )}
           </div>
         )}
       </div>
