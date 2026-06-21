@@ -6,17 +6,32 @@ export function isTTSSupported() {
   return 'speechSynthesis' in window
 }
 
+let _englishVoice = null
+
+function pickEnglishVoice() {
+  const voices = window.speechSynthesis.getVoices()
+  if (!voices.length) return
+  _englishVoice =
+    voices.find(v => v.lang === 'en-GB' && v.name.toLowerCase().includes('google')) ||
+    voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google')) ||
+    voices.find(v => v.lang === 'en-GB') ||
+    voices.find(v => v.lang === 'en-US') ||
+    voices.find(v => v.lang.startsWith('en'))
+}
+
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = pickEnglishVoice
+  pickEnglishVoice()
+}
+
 export function speak(text, onEnd) {
   if (!isTTSSupported()) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = 'en-US'
+  utterance.lang = 'en-GB'
   utterance.rate = 0.9
   utterance.pitch = 1
-  const voices = window.speechSynthesis.getVoices()
-  const english = voices.find(v => v.lang.startsWith('en') && v.name.includes('Female'))
-    || voices.find(v => v.lang.startsWith('en'))
-  if (english) utterance.voice = english
+  if (_englishVoice) utterance.voice = _englishVoice
   if (onEnd) utterance.onend = onEnd
   window.speechSynthesis.speak(utterance)
 }
