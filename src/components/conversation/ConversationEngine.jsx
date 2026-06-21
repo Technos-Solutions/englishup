@@ -28,7 +28,7 @@ export default function ConversationEngine() {
   const userIdx = order.indexOf(profile?.level || 'A1')
 
   const availableScenarios = SCENARIOS.filter(s => {
-    if (s.category === 'office-client' || s.category === 'office-provider') return true
+    if (s.category === 'office-client' || s.category === 'office-provider' || s.category === 'travel') return true
     const scenarioIdx = order.indexOf(s.level)
     return scenarioIdx <= userIdx + 1
   })
@@ -181,31 +181,29 @@ export default function ConversationEngine() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setTab('general')}
-            className={`px-5 py-2 rounded-xl font-semibold text-sm transition-colors ${
-              tab === 'general'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            🌍 General
-          </button>
-          <button
-            onClick={() => setTab('empresa')}
-            className={`px-5 py-2 rounded-xl font-semibold text-sm transition-colors ${
-              tab === 'empresa'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            🏢 Empresa
-          </button>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: 'general', label: '🌍 General' },
+            { key: 'empresa', label: '🏢 Empresa' },
+            { key: 'travel',  label: '✈️ Travel' },
+          ].map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`px-5 py-2 rounded-xl font-semibold text-sm transition-colors ${
+                tab === t.key ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+              {t.label}
+            </button>
+          ))}
         </div>
 
         {tab === 'general' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{general.map(ScenarioCard)}</div>
+        )}
+
+        {tab === 'travel' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {availableScenarios.filter(s => s.category === 'travel').map(ScenarioCard)}
+          </div>
         )}
 
         {tab === 'empresa' && (

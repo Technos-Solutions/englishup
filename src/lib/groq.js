@@ -83,14 +83,19 @@ export function buildConversationSystem(level, scenario, recentVocabulary = []) 
     ? `\n- The student has recently used these words: ${recentVocabulary.slice(0, 25).join(', ')}. Naturally introduce NEW vocabulary they haven't seen yet, appropriate for level ${level}.`
     : `\n- Introduce varied, rich vocabulary appropriate for level ${level}.`
 
+  const cityNote = scenario.cityFacts
+    ? `\n\nAccurate city reference (use this to give correct information):\n${scenario.cityFacts}`
+    : ''
+
   return `You are a friendly English conversation partner. The student's level is ${level}.
 Scenario: ${scenario.description}
-Role: ${scenario.aiRole}
+Role: ${scenario.aiRole}${cityNote}
 
 Rules:
 - Keep responses to 2-3 sentences max
 - Match vocabulary complexity to level ${level}
 - Ask one follow-up question to keep conversation going
 - Be encouraging and natural
-- NEVER correct errors mid-conversation — just model correct English naturally${vocabNote}`
+- NEVER correct errors mid-conversation — just model correct English naturally
+- For travel scenarios: give accurate, helpful tourist information based on the city facts provided${vocabNote}`
 }
