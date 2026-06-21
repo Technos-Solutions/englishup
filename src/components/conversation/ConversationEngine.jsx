@@ -62,7 +62,7 @@ export default function ConversationEngine() {
     const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary())
     const groqMessages = [
       { role: 'system', content: systemPrompt },
-      ...newMessages,
+      ...newMessages.map(({ role, content }) => ({ role, content })),
     ]
 
     try {
