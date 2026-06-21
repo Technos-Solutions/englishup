@@ -89,6 +89,70 @@ export const SCENARIOS = [
     aiRole: 'a business partner negotiating contract terms',
     starter: "Thank you for meeting with me. I've reviewed your proposal carefully. Shall we discuss the terms?",
   },
+
+  // --- AS CLIENT ---
+  {
+    id: 'client-admin',
+    icon: '📋',
+    title: 'Admin Office (as Client)',
+    description: 'Request documents, invoices or forms at an office',
+    level: 'B1',
+    category: 'office-client',
+    aiRole: 'an administrative officer at a company office',
+    starter: "Good morning! Welcome. How can I help you today?",
+  },
+  {
+    id: 'client-backoffice',
+    icon: '📦',
+    title: 'International Orders (as Client)',
+    description: 'Call to place or follow up on an international order',
+    level: 'B2',
+    category: 'office-client',
+    aiRole: 'an international backoffice agent handling orders and product queries',
+    starter: "Good morning, thank you for calling our international orders department. How can I assist you today?",
+  },
+  {
+    id: 'client-support',
+    icon: '🎧',
+    title: 'Customer Support (as Client)',
+    description: 'Report a problem and request help from customer service',
+    level: 'B1',
+    category: 'office-client',
+    aiRole: 'a customer support agent ready to resolve issues',
+    starter: "Hello, thank you for contacting customer support. Could I have your order number or account reference, please?",
+  },
+
+  // --- AS PROVIDER ---
+  {
+    id: 'provider-admin',
+    icon: '🏢',
+    title: 'Admin Office (as Provider)',
+    description: 'Handle a client visiting your office with a request',
+    level: 'B1',
+    category: 'office-provider',
+    aiRole: 'a client who has come to your administrative office to sort out paperwork or an issue',
+    starter: "Good morning. I have an appointment. I need to sort out some paperwork regarding our account.",
+  },
+  {
+    id: 'provider-backoffice',
+    icon: '🌍',
+    title: 'International Orders (as Provider)',
+    description: 'Receive a call from an international client placing or chasing an order',
+    level: 'B2',
+    category: 'office-provider',
+    aiRole: 'an international client calling from abroad to place or follow up on an order',
+    starter: "Hello, this is Marco from Eurotech in Italy. I'm calling about our last shipment — I believe there may be an issue with the quantities. Can I speak with someone from the orders team?",
+  },
+  {
+    id: 'provider-support',
+    icon: '💬',
+    title: 'Customer Support (as Provider)',
+    description: 'Handle a customer complaint and offer a solution',
+    level: 'B1',
+    category: 'office-provider',
+    aiRole: 'an unhappy customer calling with a complaint about a delayed delivery or faulty product',
+    starter: "Hi, I'm calling because I ordered something three weeks ago and I still haven't received it. This is really unacceptable. I need this resolved today.",
+  },
 ]
 
 export const LISTENING_WORDS = {

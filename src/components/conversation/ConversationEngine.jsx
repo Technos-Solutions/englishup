@@ -96,26 +96,52 @@ export default function ConversationEngine() {
   }
 
   if (!scenario) {
+    const general = availableScenarios.filter(s => !s.category)
+    const asClient = availableScenarios.filter(s => s.category === 'office-client')
+    const asProvider = availableScenarios.filter(s => s.category === 'office-provider')
+
+    const ScenarioCard = (s) => (
+      <button
+        key={s.id}
+        onClick={() => startScenario(s)}
+        className="bg-white hover:bg-indigo-50 border-2 border-gray-100 hover:border-indigo-200 rounded-2xl p-5 text-left transition-all group"
+      >
+        <div className="text-3xl mb-2">{s.icon}</div>
+        <h3 className="font-bold text-gray-900 group-hover:text-indigo-700">{s.title}</h3>
+        <p className="text-sm text-gray-500 mt-0.5">{s.description}</p>
+        <span className="inline-block mt-2 text-xs font-semibold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+          Level {s.level}
+        </span>
+      </button>
+    )
+
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">🎙️ Choose a Scenario</h1>
-        <p className="text-gray-500">Pick a situation to practice. The AI will play the other role.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {availableScenarios.map(s => (
-            <button
-              key={s.id}
-              onClick={() => startScenario(s)}
-              className="bg-white hover:bg-indigo-50 border-2 border-gray-100 hover:border-indigo-200 rounded-2xl p-5 text-left transition-all group"
-            >
-              <div className="text-3xl mb-2">{s.icon}</div>
-              <h3 className="font-bold text-gray-900 group-hover:text-indigo-700">{s.title}</h3>
-              <p className="text-sm text-gray-500 mt-0.5">{s.description}</p>
-              <span className="inline-block mt-2 text-xs font-semibold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
-                Level {s.level}
-              </span>
-            </button>
-          ))}
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">🎙️ Choose a Scenario</h1>
+          <p className="text-gray-500">Pick a situation to practice. The AI will play the other role.</p>
         </div>
+
+        {general.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">General</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{general.map(ScenarioCard)}</div>
+          </div>
+        )}
+
+        {asClient.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-blue-500 uppercase tracking-wider mb-3">🧑‍💼 Office — As Client</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{asClient.map(ScenarioCard)}</div>
+          </div>
+        )}
+
+        {asProvider.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">🏭 Office — As Provider</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{asProvider.map(ScenarioCard)}</div>
+          </div>
+        )}
       </div>
     )
   }
