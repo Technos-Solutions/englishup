@@ -145,7 +145,7 @@ export default function VerbBlitz() {
           <div className="text-5xl font-bold text-indigo-700 group-hover:text-indigo-900 transition-colors">
             {current.base}
           </div>
-          <div className="text-sm text-gray-400 mt-1">{current.translation}</div>
+          <div className="text-base font-medium text-indigo-400 mt-1">({current.translation})</div>
           <p className="text-xs text-gray-300 group-hover:text-gray-400 mt-1">🔊 tap to hear</p>
         </button>
 
