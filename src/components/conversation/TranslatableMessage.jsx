@@ -5,7 +5,7 @@ function WordTooltip({ word, sentence }) {
   const [tooltip, setTooltip] = useState(null)
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
-  const [above, setAbove] = useState(true)
+  const [pos, setPos] = useState({ x: 0, y: 0, above: true })
   const timerRef = useRef(null)
   const spanRef = useRef(null)
 
@@ -14,17 +14,15 @@ function WordTooltip({ word, sentence }) {
 
   async function handleEnter() {
     if (spanRef.current) {
-      const rect = spanRef.current.getBoundingClientRect()
-      setAbove(rect.top > 60)
+      const r = spanRef.current.getBoundingClientRect()
+      const above = r.top > 120
+      setPos({ x: r.left + r.width / 2, y: above ? r.top - 6 : r.bottom + 6, above })
     }
     setVisible(true)
     if (tooltip) return
     timerRef.current = setTimeout(async () => {
       setLoading(true)
-      try {
-        const t = await translateWord(clean, sentence)
-        setTooltip(t)
-      } catch {}
+      try { setTooltip(await translateWord(clean, sentence)) } catch {}
       setLoading(false)
     }, 350)
   }
@@ -47,13 +45,18 @@ function WordTooltip({ word, sentence }) {
         {word}
       </span>
       {visible && (loading || tooltip) && (
-        <span className={`absolute left-1/2 -translate-x-1/2 px-2.5 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-20 shadow-lg pointer-events-none ${
-          above ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-        }`}>
+        <span
+          style={{
+            position: 'fixed',
+            left: `${pos.x}px`,
+            top: pos.above ? undefined : `${pos.y}px`,
+            bottom: pos.above ? `${window.innerHeight - pos.y}px` : undefined,
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+          }}
+          className="px-2.5 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap shadow-lg pointer-events-none"
+        >
           {loading ? '…' : tooltip}
-          <span className={`absolute left-1/2 -translate-x-1/2 border-4 border-transparent ${
-            above ? 'top-full border-t-gray-900' : 'bottom-full border-b-gray-900'
-          }`} />
         </span>
       )}
     </span>
