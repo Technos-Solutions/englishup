@@ -52,16 +52,6 @@ const GAMES = [
     color: 'bg-teal-50 border-teal-200',
     badge: 'bg-teal-100 text-teal-700',
   },
-  {
-    to: '/conversation',
-    icon: '🎭',
-    title: 'Roleplay',
-    description: 'Conversa completa amb IA en un escenari real.',
-    info: 'El joc principal! Tries un escenari (café, aeroport, empresa, viatge per Europa...) i converses amb la IA en anglès. Pots parlar per veu o escriure. Al final reps un anàlisi complet dels teus errors amb correccions i suggeriments de vocabulari.',
-    level: 'A1',
-    color: 'bg-purple-50 border-purple-200',
-    badge: 'bg-purple-100 text-purple-700',
-  },
 ]
 
 function InfoTooltip({ text }) {
