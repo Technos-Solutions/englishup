@@ -18,7 +18,9 @@ export async function chatWithAI(messages) {
 }
 
 export async function analyzeConversation(studentMessages, level) {
-  const prompt = `You are an expert English teacher. A student at level ${level} just had this conversation. Analyze ONLY the student's messages.
+  const prompt = `You are an expert English teacher. A student at level ${level} just had a spoken conversation (transcribed by voice recognition). Analyze ONLY the student's messages.
+
+IMPORTANT: These messages come from speech-to-text, so they have NO punctuation (no commas, periods, apostrophes). Do NOT flag missing punctuation or capitalization as errors — only flag real grammar mistakes: wrong verb tenses, incorrect word order, wrong prepositions, subject-verb agreement, wrong article (a/an/the), wrong word choice.
 
 Student messages:
 ${studentMessages.map((m, i) => `${i + 1}. "${m}"`).join('\n')}
@@ -77,10 +79,12 @@ export async function translateWord(word, context) {
 }
 
 export async function quickCorrection(userMessage, level) {
-  const prompt = `English teacher checking a student (level ${level}) message: "${userMessage}"
-If there is a grammar or vocabulary error, return ONLY this JSON:
+  const prompt = `English teacher checking a spoken message from a student (level ${level}): "${userMessage}"
+The message comes from speech-to-text so it has no punctuation or capitals — do NOT flag that.
+Only flag real grammar errors: wrong verb tense, wrong preposition, subject-verb disagreement, wrong article, wrong word order.
+If there is a real grammar error, return ONLY this JSON:
 {"has_error": true, "original": "...", "correction": "...", "tip": "..."}
-If the message is correct, return ONLY: {"has_error": false}
+If the message is correct (or only has punctuation/capitalisation issues), return ONLY: {"has_error": false}
 No markdown, no extra text.`
 
   const response = await groq.chat.completions.create({
