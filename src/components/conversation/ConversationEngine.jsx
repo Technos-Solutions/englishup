@@ -261,6 +261,15 @@ export default function ConversationEngine() {
                 ? <TranslatableMessage text={m.content} />
                 : m.content}
             </div>
+            {m.role === 'assistant' && (
+              <button
+                onClick={() => speak(m.content)}
+                className="mt-1 text-gray-300 hover:text-indigo-400 transition-colors text-xs flex items-center gap-1 px-1"
+                title="Tornar a escoltar"
+              >
+                🔊 <span className="text-[11px]">Replay</span>
+              </button>
+            )}
             {m.correction?.has_error && (
               <div className="mt-1 max-w-xs sm:max-w-md bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 space-y-0.5">
                 <div><span className="line-through text-red-400">{m.correction.original}</span> → <span className="font-semibold text-green-700">{m.correction.correction}</span></div>
