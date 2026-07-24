@@ -227,6 +227,21 @@ export default function ConversationEngine() {
     )
   }
 
+  function highlightErrors(text, correction) {
+    if (!correction?.has_error || !correction.original) return text
+    const idx = text.toLowerCase().indexOf(correction.original.toLowerCase())
+    if (idx === -1) return text
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span style={{ textDecoration: 'underline', textDecorationColor: '#fca5a5', textDecorationThickness: '2px', textUnderlineOffset: '3px' }}>
+          {text.slice(idx, idx + correction.original.length)}
+        </span>
+        {text.slice(idx + correction.original.length)}
+      </>
+    )
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Header */}
@@ -259,7 +274,7 @@ export default function ConversationEngine() {
             }`}>
               {m.role === 'assistant'
                 ? <TranslatableMessage text={m.content} />
-                : m.content}
+                : highlightErrors(m.content, m.correction)}
             </div>
             {m.role === 'assistant' && (
               <button
@@ -271,9 +286,13 @@ export default function ConversationEngine() {
               </button>
             )}
             {m.correction?.has_error && (
-              <div className="mt-1 max-w-xs sm:max-w-md bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 space-y-0.5">
-                <div><span className="line-through text-red-400">{m.correction.original}</span> → <span className="font-semibold text-green-700">{m.correction.correction}</span></div>
-                <div className="text-amber-600">{m.correction.tip}</div>
+              <div className="mt-1 max-w-xs sm:max-w-md bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+                <div className="flex items-baseline gap-1 px-3 py-2 text-xs">
+                  <span className="text-red-400 italic">{m.correction.original}</span>
+                  <span className="text-gray-300 mx-1">→</span>
+                  <span className="text-green-600 font-medium">{m.correction.correction}</span>
+                  <span className="text-gray-400 ml-2">{m.correction.tip}</span>
+                </div>
               </div>
             )}
           </div>
