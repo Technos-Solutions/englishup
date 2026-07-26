@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { checkVersionOnLoad } from './lib/updateChecker'
 import Layout from './components/layout/Layout'
 import Login from './components/auth/Login'
 import Register from './components/auth/Register'
@@ -34,8 +36,21 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
+  const [updateReady] = useState(() => checkVersionOnLoad())
+
   return (
     <AuthProvider>
+      {updateReady && (
+        <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-4 bg-indigo-600 px-4 py-2.5 text-white text-sm shadow-lg">
+          <span className="font-medium">🚀 Nova versió disponible</span>
+          <button
+            onClick={() => window.location.reload()}
+            className="shrink-0 rounded-lg bg-white/20 hover:bg-white/30 font-semibold px-3 py-1 transition-colors"
+          >
+            Actualitzar ara
+          </button>
+        </div>
+      )}
       <BrowserRouter>
         <Routes>
           <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />

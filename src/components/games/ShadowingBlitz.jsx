@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { speak, startListening, scorePhonetic, isSpeechSupported } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { SHADOWING_SENTENCES } from '../../data/scenarios'
+import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -29,7 +30,7 @@ export default function ShadowingBlitz() {
   const roundsTotal = Math.min(6, sentences.length)
 
   useEffect(() => {
-    const q = shuffle(sentences).slice(0, roundsTotal)
+    const q = pickItems('eq_shadowing_' + level, sentences, roundsTotal)
     setQueue(q)
     setCurrent(q[0])
   }, [])

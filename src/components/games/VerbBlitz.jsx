@@ -4,6 +4,7 @@ import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { IRREGULAR_VERBS } from '../../data/verbs'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
+import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -37,7 +38,7 @@ export default function VerbBlitz() {
   const roundsTotal = 10
 
   function startGame(selectedMode) {
-    const q = shuffle(eligibleVerbs).slice(0, roundsTotal)
+    const q = pickItems('eq_verbs', eligibleVerbs, roundsTotal)
     setMode(selectedMode)
     setQueue(q)
     setCurrent(q[0])

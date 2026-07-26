@@ -4,6 +4,7 @@ import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { MODAL_EXERCISES } from '../../data/modals'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
+import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -32,10 +33,10 @@ export default function ModalVerbs() {
   const roundsTotal = Math.min(10, eligible.length)
 
   function startGame(selectedMode) {
-    const q = shuffle(eligible).slice(0, roundsTotal)
+    const q = pickItems('eq_modals', eligible, roundsTotal)
     setMode(selectedMode)
     setQueue(q)
-    setCurrent(q[0])
+    setCurrent({ ...q[0], options: shuffle(q[0].options) })
   }
 
   function handleSelect(opt) {
@@ -63,7 +64,7 @@ export default function ModalVerbs() {
     const [, ...rest] = queue
     if (rest.length === 0) return endGame(correct)
     setQueue(rest)
-    setCurrent(rest[0])
+    setCurrent({ ...rest[0], options: shuffle(rest[0].options) })
     setSelected(null)
     setRevealed(false)
     setHeard('')

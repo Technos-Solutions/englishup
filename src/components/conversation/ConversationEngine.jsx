@@ -9,6 +9,7 @@ import { getRecentVocabulary, saveVocabulary } from '../../lib/vocabulary'
 import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
 import TranslatableMessage from './TranslatableMessage'
+import NewBadge from '../ui/NewBadge'
 
 export default function ConversationEngine() {
   const { profile, refreshProfile } = useAuth()
@@ -277,21 +278,30 @@ export default function ConversationEngine() {
                 : highlightErrors(m.content, m.correction)}
             </div>
             {m.role === 'assistant' && (
-              <button
-                onClick={() => speak(m.content)}
-                className="mt-1 text-gray-300 hover:text-indigo-400 transition-colors text-xs flex items-center gap-1 px-1"
-                title="Tornar a escoltar"
-              >
-                🔊 <span className="text-[11px]">Replay</span>
-              </button>
+              <div className="mt-1 flex items-center gap-1.5">
+                <button
+                  onClick={() => speak(m.content)}
+                  className="text-gray-300 hover:text-indigo-400 transition-colors text-xs flex items-center gap-1 px-1"
+                  title="Tornar a escoltar"
+                >
+                  🔊 <span className="text-[11px]">Replay</span>
+                </button>
+                <NewBadge featureKey="replay_button" />
+              </div>
             )}
             {m.correction?.has_error && (
               <div className="mt-1 max-w-xs sm:max-w-md bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-                <div className="flex items-baseline gap-1 px-3 py-2 text-xs">
-                  <span className="text-red-400 italic">{m.correction.original}</span>
-                  <span className="text-gray-300 mx-1">→</span>
-                  <span className="text-green-600 font-medium">{m.correction.correction}</span>
-                  <span className="text-gray-400 ml-2">{m.correction.tip}</span>
+                <div className="flex flex-col px-3 py-2 gap-1 text-xs">
+                  <NewBadge featureKey="correction_display" />
+                  <div className="flex items-baseline gap-1 flex-wrap">
+                    <span className="text-red-400 italic">{m.correction.original}</span>
+                    <span className="text-gray-300 mx-1">→</span>
+                    <span className="text-green-600 font-medium">{m.correction.correction}</span>
+                    <span className="text-gray-400 ml-2">{m.correction.tip}</span>
+                  </div>
+                  {m.correction.natural && (
+                    <div className="text-indigo-400 italic">💬 "{m.correction.natural}"</div>
+                  )}
                 </div>
               </div>
             )}

@@ -83,7 +83,8 @@ export async function quickCorrection(userMessage, level) {
 The message comes from speech-to-text so it has no punctuation or capitals — do NOT flag that.
 Only flag real grammar errors: wrong verb tense, wrong preposition, subject-verb disagreement, wrong article, wrong word order.
 If there is a real grammar error, return ONLY this JSON:
-{"has_error": true, "original": "...", "correction": "...", "tip": "..."}
+{"has_error": true, "original": "...", "correction": "...", "tip": "...", "natural": "..."}
+Where "natural" is the full sentence said correctly and naturally in English.
 If the message is correct (or only has punctuation/capitalisation issues), return ONLY: {"has_error": false}
 No markdown, no extra text.`
 

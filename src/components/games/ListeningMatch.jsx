@@ -5,6 +5,7 @@ import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { LISTENING_WORDS } from '../../data/scenarios'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { translateWord } from '../../lib/groq'
+import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -84,9 +85,8 @@ export default function ListeningMatch() {
   const [xpEarned, setXpEarned] = useState(0)
 
   useEffect(() => {
-    const shuffled = shuffle(wordList).slice(0, 8)
-    setQueue(shuffled)
-    loadNext(shuffled)
+    const items = pickItems('eq_listening', wordList, 8)
+    loadNext(items)
   }, [])
 
   function loadNext(q) {

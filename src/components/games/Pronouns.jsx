@@ -4,6 +4,7 @@ import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { PRONOUNS, PRONOUN_CATEGORIES } from '../../data/pronouns'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
+import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -41,7 +42,7 @@ export default function Pronouns() {
 
   function startGame(selectedMode) {
     const pool = category === 'all' ? eligible : eligible.filter(p => p.type === category)
-    const q = shuffle(pool).slice(0, Math.min(roundsTotal, pool.length))
+    const q = pickItems('eq_pronouns_' + category, pool, Math.min(roundsTotal, pool.length))
     setMode(selectedMode)
     setQueue(q)
     setCurrent(q[0])
