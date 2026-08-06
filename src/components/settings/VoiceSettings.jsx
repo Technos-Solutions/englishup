@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { buildAvailableCharacters, getSelectedCharacterId } from '../../data/characters.js'
-import { setCharacterVoice } from '../../lib/speech.js'
-import { speak } from '../../lib/speech.js'
+import { setCharacter } from '../../lib/speech.js'
 
 export default function VoiceSettings({ onClose }) {
   const [characters, setCharacters] = useState([])
@@ -29,7 +28,7 @@ export default function VoiceSettings({ onClose }) {
 
   function handleSelect(char) {
     localStorage.setItem('eu_character', char.id)
-    setCharacterVoice(char.voice)
+    setCharacter(char)
     setSelected(char.id)
   }
 
@@ -38,7 +37,8 @@ export default function VoiceSettings({ onClose }) {
     const utt = new SpeechSynthesisUtterance('Hello! My name is ' + char.name + '.')
     utt.voice = char.voice
     utt.lang = char.voice.lang
-    utt.rate = 0.9
+    utt.rate = char.rate ?? 0.9
+    utt.pitch = char.pitch ?? 1
     window.speechSynthesis.cancel()
     window.speechSynthesis.speak(utt)
   }

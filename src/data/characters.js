@@ -12,6 +12,8 @@ export const CHARACTERS = [
     flag: '🇬🇧',
     accent: 'British',
     emoji: '👩‍🏫',
+    rate: 0.85,
+    pitch: 1.2,
     match: v => v.lang === 'en-GB' && !looksMALE(v),
   },
   {
@@ -20,6 +22,8 @@ export const CHARACTERS = [
     flag: '🇬🇧',
     accent: 'British',
     emoji: '👨‍💼',
+    rate: 0.8,
+    pitch: 0.7,
     match: v => v.lang === 'en-GB' && looksMALE(v),
   },
   {
@@ -28,6 +32,8 @@ export const CHARACTERS = [
     flag: '🇺🇸',
     accent: 'American',
     emoji: '👩‍💻',
+    rate: 1.0,
+    pitch: 1.05,
     match: v => v.lang === 'en-US' && !looksMALE(v),
   },
   {
@@ -36,6 +42,8 @@ export const CHARACTERS = [
     flag: '🇺🇸',
     accent: 'American',
     emoji: '🧑‍🎓',
+    rate: 0.95,
+    pitch: 0.72,
     match: v => v.lang === 'en-US' && looksMALE(v),
   },
   {
@@ -44,6 +52,8 @@ export const CHARACTERS = [
     flag: '🇦🇺',
     accent: 'Australian',
     emoji: '👩‍🎨',
+    rate: 1.05,
+    pitch: 1.1,
     match: v => v.lang.startsWith('en-AU') || v.lang.startsWith('en-au'),
   },
 ]
