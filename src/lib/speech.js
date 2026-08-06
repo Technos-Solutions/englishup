@@ -1,3 +1,5 @@
+import { buildAvailableCharacters } from '../data/characters.js'
+
 export function isSpeechSupported() {
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
 }
@@ -11,6 +13,14 @@ let _englishVoice = null
 function pickEnglishVoice() {
   const voices = window.speechSynthesis.getVoices()
   if (!voices.length) return
+
+  const charId = localStorage.getItem('eu_character')
+  if (charId) {
+    const chars = buildAvailableCharacters()
+    const found = chars.find(c => c.id === charId)
+    if (found) { _englishVoice = found.voice; return }
+  }
+
   _englishVoice =
     voices.find(v => v.lang === 'en-GB' && v.name.toLowerCase().includes('google')) ||
     voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google')) ||
@@ -22,6 +32,10 @@ function pickEnglishVoice() {
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = pickEnglishVoice
   pickEnglishVoice()
+}
+
+export function setCharacterVoice(voice) {
+  _englishVoice = voice
 }
 
 export function speak(text, onEnd) {
