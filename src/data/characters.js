@@ -51,10 +51,16 @@ export const CHARACTERS = [
 export function buildAvailableCharacters() {
   const voices = window.speechSynthesis.getVoices()
   const english = voices.filter(v => v.lang.startsWith('en'))
-  return CHARACTERS.flatMap(char => {
+  if (!english.length) return []
+
+  const strict = CHARACTERS.flatMap(char => {
     const voice = english.find(v => char.match(v))
     return voice ? [{ ...char, voice }] : []
   })
+  if (strict.length) return strict
+
+  // Fallback: if no accent match, assign available English voices to characters in order
+  return english.slice(0, CHARACTERS.length).map((voice, i) => ({ ...CHARACTERS[i], voice }))
 }
 
 export function getSelectedCharacterId() {

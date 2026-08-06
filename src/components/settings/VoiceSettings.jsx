@@ -5,15 +5,26 @@ import { speak } from '../../lib/speech.js'
 
 export default function VoiceSettings({ onClose }) {
   const [characters, setCharacters] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(getSelectedCharacterId())
 
   useEffect(() => {
+    let cancelled = false
     function load() {
+      if (cancelled) return
       const chars = buildAvailableCharacters()
-      if (chars.length) setCharacters(chars)
+      if (chars.length) { setCharacters(chars); setLoading(false) }
     }
     load()
-    window.speechSynthesis.onvoiceschanged = load
+    window.speechSynthesis.addEventListener('voiceschanged', load)
+    const t1 = setTimeout(load, 500)
+    const t2 = setTimeout(() => { if (!cancelled) setLoading(false) }, 2000)
+    return () => {
+      cancelled = true
+      window.speechSynthesis.removeEventListener('voiceschanged', load)
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
   }, [])
 
   function handleSelect(char) {
@@ -43,8 +54,10 @@ export default function VoiceSettings({ onClose }) {
 
         <p className="text-sm font-semibold text-gray-500 mb-3">Veu del professor</p>
 
-        {characters.length === 0 ? (
+        {characters.length === 0 && loading ? (
           <p className="text-sm text-gray-400 text-center py-4">Carregant veus disponibles…</p>
+        ) : characters.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">No s'han trobat veus en anglès al dispositiu.</p>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {characters.map(char => (
