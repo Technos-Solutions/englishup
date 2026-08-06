@@ -1,14 +1,11 @@
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { getLevelFromXP } from '../../lib/xp'
-import VoiceSettings from '../settings/VoiceSettings'
 
 export default function Navbar() {
   const { profile } = useAuth()
   const location = useLocation()
-  const [showSettings, setShowSettings] = useState(false)
   const level = profile ? getLevelFromXP(profile.xp) : null
 
   const links = [
@@ -21,7 +18,6 @@ export default function Navbar() {
   ]
 
   return (
-    <>
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-2 font-bold text-indigo-600 text-lg">
@@ -55,13 +51,6 @@ export default function Navbar() {
             </div>
           )}
           <button
-            onClick={() => setShowSettings(true)}
-            className="text-gray-400 hover:text-indigo-500 text-lg transition-colors"
-            title="Personalització"
-          >
-            ⚙️
-          </button>
-          <button
             onClick={() => supabase.auth.signOut()}
             className="text-gray-400 hover:text-red-500 text-sm transition-colors"
           >
@@ -86,7 +75,5 @@ export default function Navbar() {
         ))}
       </div>
     </nav>
-    {showSettings && <VoiceSettings onClose={() => setShowSettings(false)} />}
-  </>
   )
 }
