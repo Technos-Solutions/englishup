@@ -6,56 +6,11 @@ function looksMALE(voice) {
 }
 
 export const CHARACTERS = [
-  {
-    id: 'sophie',
-    name: 'Sophie',
-    flag: '🇬🇧',
-    accent: 'British',
-    emoji: '👩‍🏫',
-    rate: 0.85,
-    pitch: 1.2,
-    match: v => v.lang === 'en-GB' && !looksMALE(v),
-  },
-  {
-    id: 'james',
-    name: 'James',
-    flag: '🇬🇧',
-    accent: 'British',
-    emoji: '👨‍💼',
-    rate: 0.8,
-    pitch: 0.7,
-    match: v => v.lang === 'en-GB' && looksMALE(v),
-  },
-  {
-    id: 'emma',
-    name: 'Emma',
-    flag: '🇺🇸',
-    accent: 'American',
-    emoji: '👩‍💻',
-    rate: 1.0,
-    pitch: 1.05,
-    match: v => v.lang === 'en-US' && !looksMALE(v),
-  },
-  {
-    id: 'jake',
-    name: 'Jake',
-    flag: '🇺🇸',
-    accent: 'American',
-    emoji: '🧑‍🎓',
-    rate: 0.95,
-    pitch: 0.72,
-    match: v => v.lang === 'en-US' && looksMALE(v),
-  },
-  {
-    id: 'zoe',
-    name: 'Zoe',
-    flag: '🇦🇺',
-    accent: 'Australian',
-    emoji: '👩‍🎨',
-    rate: 1.05,
-    pitch: 1.1,
-    match: v => v.lang.startsWith('en-AU') || v.lang.startsWith('en-au'),
-  },
+  { id: 'sophie', name: 'Sophie', flag: '🇬🇧', accent: 'British',    emoji: '👩‍🏫', match: v => v.lang === 'en-GB' && !looksMALE(v) },
+  { id: 'james',  name: 'James',  flag: '🇬🇧', accent: 'British',    emoji: '👨‍💼', match: v => v.lang === 'en-GB' && looksMALE(v) },
+  { id: 'emma',   name: 'Emma',   flag: '🇺🇸', accent: 'American',   emoji: '👩‍💻', match: v => v.lang === 'en-US' && !looksMALE(v) },
+  { id: 'jake',   name: 'Jake',   flag: '🇺🇸', accent: 'American',   emoji: '🧑‍🎓', match: v => v.lang === 'en-US' && looksMALE(v) },
+  { id: 'zoe',    name: 'Zoe',    flag: '🇦🇺', accent: 'Australian', emoji: '👩‍🎨', match: v => v.lang.startsWith('en-AU') || v.lang.startsWith('en-au') },
 ]
 
 export function buildAvailableCharacters() {

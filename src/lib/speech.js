@@ -9,8 +9,6 @@ export function isTTSSupported() {
 }
 
 let _englishVoice = null
-let _rate = 0.9
-let _pitch = 1
 
 function pickEnglishVoice() {
   const voices = window.speechSynthesis.getVoices()
@@ -20,12 +18,7 @@ function pickEnglishVoice() {
   if (charId) {
     const chars = buildAvailableCharacters()
     const found = chars.find(c => c.id === charId)
-    if (found) {
-      _englishVoice = found.voice
-      _rate = found.rate ?? 0.9
-      _pitch = found.pitch ?? 1
-      return
-    }
+    if (found) { _englishVoice = found.voice; return }
   }
 
   _englishVoice =
@@ -41,19 +34,17 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   pickEnglishVoice()
 }
 
-export function setCharacter(char) {
-  _englishVoice = char.voice
-  _rate = char.rate ?? 0.9
-  _pitch = char.pitch ?? 1
+export function setCharacterVoice(voice) {
+  _englishVoice = voice
 }
 
 export function speak(text, onEnd) {
   if (!isTTSSupported()) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = _englishVoice ? _englishVoice.lang : 'en-GB'
-  utterance.rate = _rate
-  utterance.pitch = _pitch
+  utterance.lang = 'en-GB'
+  utterance.rate = 0.9
+  utterance.pitch = 1
   if (_englishVoice) utterance.voice = _englishVoice
   if (onEnd) utterance.onend = onEnd
   window.speechSynthesis.speak(utterance)
