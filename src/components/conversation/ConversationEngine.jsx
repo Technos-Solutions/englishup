@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { chatWithAI, analyzeConversation, buildConversationSystem, quickCorrection } from '../../lib/groq'
+import { chatWithAI, analyzeConversation, buildConversationSystem, quickCorrection, generateKeyVocabulary } from '../../lib/groq'
 import { speak, stopSpeaking } from '../../lib/speech'
 import { awardXP, calculateConversationXP } from '../../lib/xp'
 import { SCENARIOS } from '../../data/scenarios'
@@ -9,6 +9,7 @@ import { getRecentVocabulary, saveVocabulary } from '../../lib/vocabulary'
 import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
 import TranslatableMessage from './TranslatableMessage'
+import VocabWarmup from './VocabWarmup'
 import NewBadge from '../ui/NewBadge'
 import LevelUpModal from '../ui/LevelUpModal'
 
@@ -18,6 +19,10 @@ export default function ConversationEngine() {
   const [scenario, setScenario] = useState(null)
   const [tab, setTab] = useState('general')
   const [realtimeMode, setRealtimeMode] = useState(false)
+  const [warmup, setWarmup] = useState(null)
+  const [warmupWords, setWarmupWords] = useState([])
+  const [warmupLoading, setWarmupLoading] = useState(false)
+  const [keyVocab, setKeyVocab] = useState([])
   const [pendingMode, setPendingMode] = useState(false)
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
@@ -42,7 +47,22 @@ export default function ConversationEngine() {
   }, [messages])
 
   async function startScenario(s) {
-    setPendingMode(s)
+    setWarmup(s)
+    setWarmupLoading(true)
+    setWarmupWords([])
+    try {
+      const words = await generateKeyVocabulary(s, profile?.level || 'A1')
+      setWarmupWords(words)
+    } catch {
+      setWarmupWords([])
+    }
+    setWarmupLoading(false)
+  }
+
+  function finishWarmup() {
+    setKeyVocab(warmupWords)
+    setPendingMode(warmup)
+    setWarmup(null)
   }
 
   function confirmStart(s, withRealtime) {
@@ -63,7 +83,7 @@ export default function ConversationEngine() {
     setMessages(newMessages)
     setLoading(true)
 
-    const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary())
+    const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary(), keyVocab.map(w => w.word))
     const groqMessages = [
       { role: 'system', content: systemPrompt },
       ...newMessages.map(({ role, content }) => ({ role, content })),
@@ -119,6 +139,10 @@ export default function ConversationEngine() {
       navigate('/dashboard')
     }
     setAnalyzing(false)
+  }
+
+  if (warmup) {
+    return <VocabWarmup scenario={warmup} words={warmupWords} loading={warmupLoading} onDone={finishWarmup} />
   }
 
   if (pendingMode) {
