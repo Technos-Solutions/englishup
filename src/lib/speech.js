@@ -30,8 +30,17 @@ function pickEnglishVoice() {
 }
 
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = pickEnglishVoice
+  window.speechSynthesis.addEventListener('voiceschanged', pickEnglishVoice)
   pickEnglishVoice()
+  // Some browsers (notably Safari/iOS) never fire 'voiceschanged' and only
+  // populate getVoices() a little after load — retry a few times so we
+  // don't get stuck on the device's default (often non-English) voice.
+  let retries = 0
+  const retryTimer = setInterval(() => {
+    retries++
+    if (_englishVoice || retries > 10) { clearInterval(retryTimer); return }
+    pickEnglishVoice()
+  }, 300)
 }
 
 export function setCharacterVoice(voice) {
@@ -42,7 +51,7 @@ export function speak(text, onEnd) {
   if (!isTTSSupported()) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = 'en-GB'
+  utterance.lang = _englishVoice?.lang || 'en-GB'
   utterance.rate = 0.9
   utterance.pitch = 1
   if (_englishVoice) utterance.voice = _englishVoice
