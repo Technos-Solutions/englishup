@@ -27,7 +27,7 @@ export default function Dashboard() {
       .then(({ data }) => setRecentSessions(data || []))
   }, [profile?.id])
 
-  if (!profile) return <div className="flex items-center justify-center h-64 text-gray-400">Loading…</div>
+  if (!profile) return <div className="flex items-center justify-center h-64 text-indigo-200">Loading…</div>
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -37,14 +37,14 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl text-gray-900">{greeting}, {profile.username}! 👋</h1>
-          <p className="text-gray-500 mt-0.5 font-semibold">Ready to practice English today?</p>
+          <h1 className="text-3xl text-white">{greeting}, {profile.username}! 👋</h1>
+          <p className="text-indigo-200 mt-0.5 font-semibold">Ready to practice English today?</p>
         </div>
         {profile.streak > 0 && (
-          <div className="bg-orange-50 border-2 border-orange-100 rounded-2xl px-4 py-2 text-center">
+          <div className="bg-orange-400/10 border-2 border-orange-400/20 rounded-2xl px-4 py-2 text-center">
             <div className="text-2xl">🔥</div>
-            <div className="font-extrabold text-orange-600 text-lg leading-none">{profile.streak}</div>
-            <div className="text-xs text-orange-400 font-bold">day streak</div>
+            <div className="font-extrabold text-orange-300 text-lg leading-none">{profile.streak}</div>
+            <div className="text-xs text-orange-300/70 font-bold">day streak</div>
           </div>
         )}
       </div>
@@ -54,7 +54,7 @@ export default function Dashboard() {
 
       {/* Quick actions */}
       <div>
-        <h2 className="font-extrabold text-gray-700 mb-3 text-lg">What do you want to practice?</h2>
+        <h2 className="font-extrabold text-indigo-100 mb-3 text-lg">What do you want to practice?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {QUICK_ACTIONS.map(a => (
             <Link
@@ -75,7 +75,7 @@ export default function Dashboard() {
       {/* Recent activity */}
       {recentSessions.length > 0 && (
         <div>
-          <h2 className="font-extrabold text-gray-700 mb-3 text-lg">Recent Activity</h2>
+          <h2 className="font-extrabold text-indigo-100 mb-3 text-lg">Recent Activity</h2>
           <div className="card divide-y-2 divide-gray-50">
             {recentSessions.map(s => (
               <div key={s.id} className="flex items-center justify-between px-4 py-3">

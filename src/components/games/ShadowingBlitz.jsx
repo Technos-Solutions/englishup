@@ -86,8 +86,8 @@ export default function ShadowingBlitz() {
     return (
       <div className="text-center space-y-4 py-12 max-w-md mx-auto">
         <div className="text-6xl">🎉</div>
-        <h2 className="text-2xl font-bold text-gray-900">Shadowing complete!</h2>
-        <p className="text-gray-500">Average accuracy: <span className="font-bold text-indigo-600">{avg}%</span></p>
+        <h2 className="text-2xl font-bold text-white">Shadowing complete!</h2>
+        <p className="text-indigo-200">Average accuracy: <span className="font-bold text-violet-300">{avg}%</span></p>
         <p className="text-amber-500 font-bold text-xl">+{xpEarned} XP ⭐</p>
         <button onClick={() => window.location.reload()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
           Try again
@@ -100,8 +100,8 @@ export default function ShadowingBlitz() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">🔁 Shadowing Blitz</h2>
-        <span className="text-sm text-gray-400">{Math.min(roundNum, roundsTotal)} / {roundsTotal}</span>
+        <h2 className="text-xl font-bold text-white">🔁 Shadowing Blitz</h2>
+        <span className="text-sm text-indigo-300">{Math.min(roundNum, roundsTotal)} / {roundsTotal}</span>
       </div>
 
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">

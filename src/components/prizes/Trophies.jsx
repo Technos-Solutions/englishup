@@ -25,8 +25,8 @@ export default function Trophies() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">🏆 Trophies</h1>
-        <p className="text-gray-500 mt-1">{earnedCount} / {ACHIEVEMENTS.length} unlocked</p>
+        <h1 className="text-2xl font-bold text-white">🏆 Trophies</h1>
+        <p className="text-indigo-200 mt-1">{earnedCount} / {ACHIEVEMENTS.length} unlocked</p>
       </div>
 
       {/* Progress bar */}
@@ -41,7 +41,7 @@ export default function Trophies() {
       </div>
 
       {loading ? (
-        <div className="text-center text-gray-400 py-12">Loading…</div>
+        <div className="text-center text-indigo-200 py-12">Loading…</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {ACHIEVEMENTS.map(a => {

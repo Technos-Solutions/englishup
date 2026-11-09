@@ -5,17 +5,21 @@
 @layer base {
   body {
     @apply text-gray-900 antialiased;
+    background: radial-gradient(circle at 20% 0%, #4c1d95 0%, #1e1b4b 45%, #0b0a1a 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
   h1, h2, h3 {
-    @apply font-extrabold tracking-tight;
+    @apply font-bold tracking-tight;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:shadow-none disabled:translate-y-0
-      text-white font-extrabold py-3 px-6 rounded-2xl
-      shadow-[0_4px_0_0_#3730a3] active:shadow-[0_1px_0_0_#3730a3] active:translate-y-[3px]
+    @apply bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-400 hover:to-blue-400
+      disabled:opacity-50 disabled:shadow-none
+      text-white font-bold py-3 px-6 rounded-2xl
+      shadow-[0_8px_20px_rgba(99,102,241,0.4)] active:scale-[0.98]
       transition-all duration-100;
   }
   .btn-secondary {

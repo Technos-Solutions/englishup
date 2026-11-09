@@ -130,8 +130,8 @@ export default function ListeningMatch() {
     return (
       <div className="text-center space-y-4 py-12">
         <div className="text-6xl">🎉</div>
-        <h2 className="text-2xl font-bold text-gray-900">Well done!</h2>
-        <p className="text-gray-500">{score.correct} / {score.total} correct</p>
+        <h2 className="text-2xl font-bold text-white">Well done!</h2>
+        <p className="text-indigo-200">{score.correct} / {score.total} correct</p>
         <p className="text-amber-500 font-bold text-xl">+{xpEarned} XP ⭐</p>
         <button
           onClick={() => window.location.reload()}
@@ -144,13 +144,13 @@ export default function ListeningMatch() {
     )
   }
 
-  if (!current) return <div className="text-center text-gray-400 py-12">Loading…</div>
+  if (!current) return <div className="text-center text-indigo-200 py-12">Loading…</div>
 
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">👂 Listening Match</h2>
-        <span className="text-sm text-gray-400">{score.total + 1} / 8</span>
+        <h2 className="text-xl font-bold text-white">👂 Listening Match</h2>
+        <span className="text-sm text-indigo-300">{score.total + 1} / 8</span>
       </div>
 
       <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">

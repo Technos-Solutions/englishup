@@ -15,7 +15,7 @@ export default function VocabWarmup({ scenario, words, loading, onDone }) {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center space-y-3">
           <div className="text-5xl animate-bounce">📚</div>
-          <p className="text-gray-500 font-semibold">Preparant vocabulari clau…</p>
+          <p className="text-indigo-200 font-semibold">Preparant vocabulari clau…</p>
         </div>
       </div>
     )
@@ -36,9 +36,9 @@ export default function VocabWarmup({ scenario, words, loading, onDone }) {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <p className="text-sm font-extrabold text-indigo-500 uppercase tracking-wider">Escalfament · {scenario.title}</p>
-          <h1 className="text-2xl text-gray-900 mt-1">Paraules clau abans de començar</h1>
-          <p className="text-gray-500 text-sm mt-1 font-semibold">{index + 1} / {words.length}</p>
+          <p className="text-sm font-extrabold text-violet-300 uppercase tracking-wider">Escalfament · {scenario.title}</p>
+          <h1 className="text-2xl text-white mt-1">Paraules clau abans de començar</h1>
+          <p className="text-indigo-200 text-sm mt-1 font-semibold">{index + 1} / {words.length}</p>
         </div>
 
         <button
@@ -71,7 +71,7 @@ export default function VocabWarmup({ scenario, words, loading, onDone }) {
           </button>
         </div>
 
-        <button onClick={onDone} className="block mx-auto text-sm text-gray-400 hover:text-gray-600 font-semibold">
+        <button onClick={onDone} className="block mx-auto text-sm text-indigo-300 hover:text-white font-semibold">
           Saltar escalfament
         </button>
       </div>

@@ -98,8 +98,8 @@ export default function VerbBlitz() {
     return (
       <div className="max-w-md mx-auto text-center space-y-6 py-8">
         <div className="text-5xl">⚡</div>
-        <h1 className="text-2xl font-bold text-gray-900">Verb Blitz</h1>
-        <p className="text-gray-500">Irregular verbs — choose your mode</p>
+        <h1 className="text-2xl font-bold text-white">Verb Blitz</h1>
+        <p className="text-indigo-200">Irregular verbs — choose your mode</p>
         <div className="grid grid-cols-1 gap-3">
           <button onClick={() => startGame('mc')}
             className="border-2 border-indigo-200 hover:border-indigo-400 bg-indigo-50 hover:bg-indigo-100 rounded-xl p-5 text-left transition-all">
@@ -120,8 +120,8 @@ export default function VerbBlitz() {
     return (
       <div className="text-center space-y-4 py-12 max-w-md mx-auto">
         <div className="text-6xl">⚡</div>
-        <h2 className="text-2xl font-bold text-gray-900">Verb Blitz done!</h2>
-        <p className="text-gray-500">{score.correct} correct out of {roundsTotal}</p>
+        <h2 className="text-2xl font-bold text-white">Verb Blitz done!</h2>
+        <p className="text-indigo-200">{score.correct} correct out of {roundsTotal}</p>
         <p className="text-amber-500 font-bold text-xl">+{xpEarned} XP ⭐</p>
         <button onClick={() => { setMode(null); setFinished(false); setScore({ correct: 0, wrong: 0 }) }}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl">
@@ -132,18 +132,18 @@ export default function VerbBlitz() {
     )
   }
 
-  if (!current) return <div className="text-center text-gray-400 py-12">Loading…</div>
+  if (!current) return <div className="text-center text-indigo-200 py-12">Loading…</div>
 
   const roundNum = roundsTotal - queue.length + 1
 
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">⚡ Verb Blitz</h2>
+        <h2 className="text-xl font-bold text-white">⚡ Verb Blitz</h2>
         <div className="flex gap-3 text-sm">
-          <span className="text-emerald-600 font-bold">✓ {score.correct}</span>
-          <span className="text-red-500 font-bold">✗ {score.wrong}</span>
-          <span className="text-gray-400">{roundNum}/{roundsTotal}</span>
+          <span className="text-emerald-400 font-bold">✓ {score.correct}</span>
+          <span className="text-red-400 font-bold">✗ {score.wrong}</span>
+          <span className="text-indigo-300">{roundNum}/{roundsTotal}</span>
         </div>
       </div>
 

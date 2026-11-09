@@ -206,8 +206,8 @@ export default function ConversationEngine() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🎙️ Choose a Scenario</h1>
-          <p className="text-gray-500">Pick a situation to practice. The AI will play the other role.</p>
+          <h1 className="text-2xl font-bold text-white">🎙️ Choose a Scenario</h1>
+          <p className="text-indigo-200">Pick a situation to practice. The AI will play the other role.</p>
         </div>
 
         {/* Tabs */}
@@ -278,8 +278,8 @@ export default function ConversationEngine() {
         <div className="flex items-center gap-2">
           <span className="text-2xl">{scenario.icon}</span>
           <div>
-            <h2 className="font-bold text-gray-900">{scenario.title}</h2>
-            <p className="text-xs text-gray-400">Level {scenario.level}</p>
+            <h2 className="font-bold text-white">{scenario.title}</h2>
+            <p className="text-xs text-indigo-300">Level {scenario.level}</p>
           </div>
         </div>
         {!ended && (
@@ -345,7 +345,7 @@ export default function ConversationEngine() {
         {analyzing && (
           <div className="text-center py-8">
             <div className="text-4xl animate-bounce mb-2">📊</div>
-            <p className="text-gray-500">Analysing your conversation…</p>
+            <p className="text-indigo-200">Analysing your conversation…</p>
           </div>
         )}
         <div ref={bottomRef} />

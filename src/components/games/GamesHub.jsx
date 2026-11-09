@@ -80,8 +80,8 @@ export default function GamesHub() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl text-gray-900">🎮 Games</h1>
-        <p className="text-gray-500 mt-1 font-semibold">Tots els jocs disponibles sempre. El nivell indica la dificultat.</p>
+        <h1 className="text-3xl text-white">🎮 Games</h1>
+        <p className="text-indigo-200 mt-1 font-semibold">Tots els jocs disponibles sempre. El nivell indica la dificultat.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

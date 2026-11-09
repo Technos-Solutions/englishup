@@ -102,12 +102,12 @@ export default function Pronouns() {
       <div className="max-w-md mx-auto space-y-6 py-4">
         <div className="text-center">
           <div className="text-5xl mb-2">👤</div>
-          <h1 className="text-2xl font-bold text-gray-900">Pronouns</h1>
-          <p className="text-gray-500 mt-1">Català → English</p>
+          <h1 className="text-2xl font-bold text-white">Pronouns</h1>
+          <p className="text-indigo-200 mt-1">Català → English</p>
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-gray-600 mb-2">Category:</p>
+          <p className="text-sm font-semibold text-indigo-200 mb-2">Category:</p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setCategory('all')}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${category === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
@@ -142,8 +142,8 @@ export default function Pronouns() {
     return (
       <div className="text-center space-y-4 py-12 max-w-md mx-auto">
         <div className="text-6xl">👤</div>
-        <h2 className="text-2xl font-bold text-gray-900">Pronouns done!</h2>
-        <p className="text-gray-500">{score.correct} correct out of {roundsTotal}</p>
+        <h2 className="text-2xl font-bold text-white">Pronouns done!</h2>
+        <p className="text-indigo-200">{score.correct} correct out of {roundsTotal}</p>
         <p className="text-amber-500 font-bold text-xl">+{xpEarned} XP ⭐</p>
         <button onClick={() => { setMode(null); setFinished(false); setScore({ correct: 0, wrong: 0 }) }}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl">
@@ -154,7 +154,7 @@ export default function Pronouns() {
     )
   }
 
-  if (!current) return <div className="text-center text-gray-400 py-12">Loading…</div>
+  if (!current) return <div className="text-center text-indigo-200 py-12">Loading…</div>
 
   const roundNum = roundsTotal - queue.length + 1
   const catInfo = PRONOUN_CATEGORIES[current.type]
@@ -163,11 +163,11 @@ export default function Pronouns() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">👤 Pronouns</h2>
+        <h2 className="text-xl font-bold text-white">👤 Pronouns</h2>
         <div className="flex gap-3 text-sm">
-          <span className="text-emerald-600 font-bold">✓ {score.correct}</span>
-          <span className="text-red-500 font-bold">✗ {score.wrong}</span>
-          <span className="text-gray-400">{roundNum}/{roundsTotal}</span>
+          <span className="text-emerald-400 font-bold">✓ {score.correct}</span>
+          <span className="text-red-400 font-bold">✗ {score.wrong}</span>
+          <span className="text-indigo-300">{roundNum}/{roundsTotal}</span>
         </div>
       </div>
 

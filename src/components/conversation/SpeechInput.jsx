@@ -70,10 +70,10 @@ export default function SpeechInput({ onSubmit, disabled }) {
           >
             {listening ? '⏹' : '🎙️'}
           </button>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-indigo-200">
             {listening ? 'Listening… click to stop' : 'Tap to speak'}
           </p>
-          {error && <p className="text-red-500 text-sm">{error}. Try typing instead.</p>}
+          {error && <p className="text-red-400 text-sm">{error}. Try typing instead.</p>}
         </div>
       ) : (
         <form onSubmit={handleTextSubmit} className="flex gap-2">
@@ -83,7 +83,7 @@ export default function SpeechInput({ onSubmit, disabled }) {
             onChange={e => setText(e.target.value)}
             disabled={disabled}
             placeholder="Type your message in English…"
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"
+            className="flex-1 bg-white/10 border border-white/15 text-white placeholder:text-indigo-300/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-40"
           />
           <button
             type="submit"

@@ -68,20 +68,20 @@ function TopicDetail({ topic }) {
       <div className="flex items-center gap-3">
         <span className="text-4xl">{topic.icon}</span>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{topic.title}</h2>
-          <p className="text-gray-500 text-sm">{topic.summary}</p>
+          <h2 className="text-2xl font-bold text-white">{topic.title}</h2>
+          <p className="text-indigo-200 text-sm">{topic.summary}</p>
         </div>
         <span className="ml-auto text-xs font-semibold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">{topic.level}+</span>
       </div>
 
       {/* Tab: Table / Quiz */}
-      <div className="flex gap-2 border-b border-gray-100 pb-1">
+      <div className="flex gap-2 border-b border-white/10 pb-1">
         <button onClick={() => setTab('table')}
-          className={`px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${tab === 'table' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}>
+          className={`px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${tab === 'table' ? 'bg-indigo-600 text-white' : 'text-indigo-200 hover:text-white'}`}>
           📋 Table
         </button>
         <button onClick={() => setTab('quiz')}
-          className={`px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${tab === 'quiz' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:text-gray-700'}`}>
+          className={`px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${tab === 'quiz' ? 'bg-indigo-600 text-white' : 'text-indigo-200 hover:text-white'}`}>
           🎯 Practice
         </button>
       </div>
@@ -161,7 +161,7 @@ export default function GrammarFocus() {
   if (selected) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
-        <button onClick={() => setSelected(null)} className="text-sm text-indigo-500 hover:text-indigo-700 flex items-center gap-1">
+        <button onClick={() => setSelected(null)} className="text-sm text-violet-300 hover:text-violet-200 flex items-center gap-1">
           ← All topics
         </button>
         <TopicDetail topic={selected} />
@@ -172,8 +172,8 @@ export default function GrammarFocus() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">📚 Grammar Focus</h1>
-        <p className="text-gray-500 mt-1">Selecciona un tema per veure la taula completa, exemples i practicar.</p>
+        <h1 className="text-2xl font-bold text-white">📚 Grammar Focus</h1>
+        <p className="text-indigo-200 mt-1">Selecciona un tema per veure la taula completa, exemples i practicar.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {available.map(t => (
