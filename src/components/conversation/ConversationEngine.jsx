@@ -53,7 +53,8 @@ export default function ConversationEngine() {
     try {
       const words = await generateKeyVocabulary(s, profile?.level || 'A1')
       setWarmupWords(words)
-    } catch {
+    } catch (err) {
+      console.error('Vocab warm-up failed', err)
       setWarmupWords([])
     }
     setWarmupLoading(false)

@@ -7,6 +7,18 @@ const groq = new Groq({
 
 const MODEL = 'llama-3.3-70b-versatile'
 
+// Models sometimes wrap JSON replies in markdown fences or add stray text
+// around them despite instructions not to — strip that before parsing.
+function extractJSON(text) {
+  let s = text.trim()
+  const fenced = s.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  if (fenced) s = fenced[1].trim()
+  const start = s.search(/[[{]/)
+  const end = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'))
+  if (start !== -1 && end > start) s = s.slice(start, end + 1)
+  return s
+}
+
 export async function chatWithAI(messages) {
   const response = await groq.chat.completions.create({
     model: MODEL,
@@ -47,7 +59,7 @@ Respond with ONLY valid JSON (no markdown, no extra text):
   })
 
   try {
-    return JSON.parse(response.choices[0].message.content)
+    return JSON.parse(extractJSON(response.choices[0].message.content))
   } catch {
     return {
       fluency_score: 70,
@@ -96,7 +108,7 @@ No markdown, no extra text.`
   })
 
   try {
-    return JSON.parse(response.choices[0].message.content)
+    return JSON.parse(extractJSON(response.choices[0].message.content))
   } catch {
     return { has_error: false }
   }
@@ -160,9 +172,10 @@ Where translation_ca is the Catalan translation, and example is a short natural 
   })
 
   try {
-    const words = JSON.parse(response.choices[0].message.content)
+    const words = JSON.parse(extractJSON(response.choices[0].message.content))
     return Array.isArray(words) ? words.slice(0, 8) : []
-  } catch {
+  } catch (err) {
+    console.error('generateKeyVocabulary: failed to parse response', err, response.choices[0].message.content)
     return []
   }
 }
