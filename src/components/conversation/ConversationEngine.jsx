@@ -10,6 +10,7 @@ import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
 import TranslatableMessage from './TranslatableMessage'
 import NewBadge from '../ui/NewBadge'
+import LevelUpModal from '../ui/LevelUpModal'
 
 export default function ConversationEngine() {
   const { profile, refreshProfile } = useAuth()
@@ -24,6 +25,7 @@ export default function ConversationEngine() {
   const [analysis, setAnalysis] = useState(null)
   const [xpEarned, setXpEarned] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
+  const [levelUp, setLevelUp] = useState(null)
   const bottomRef = useRef(null)
 
   const order = ['A1','A2','B1','B2','C1','C2']
@@ -104,13 +106,14 @@ export default function ConversationEngine() {
     try {
       const result = await analyzeConversation(studentMessages, profile?.level || 'A1')
       const xp = calculateConversationXP(result.fluency_score || 70)
-      await awardXP(profile.id, xp, 'conversation', {
+      const awardResult = await awardXP(profile.id, xp, 'conversation', {
         fluency_score: result.fluency_score,
         corrections: result,
       })
       await refreshProfile()
       setXpEarned(xp)
       setAnalysis(result)
+      if (awardResult?.leveledUp) setLevelUp(awardResult.newLevel)
       if (result.new_words?.length) saveVocabulary(result.new_words)
     } catch {
       navigate('/dashboard')
@@ -336,6 +339,8 @@ export default function ConversationEngine() {
           onClose={() => navigate('/dashboard')}
         />
       )}
+
+      {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
     </div>
   )
 }

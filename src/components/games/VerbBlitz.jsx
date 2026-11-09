@@ -5,6 +5,7 @@ import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { IRREGULAR_VERBS } from '../../data/verbs'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { pickItems } from '../../lib/gameQueue'
+import LevelUpModal from '../ui/LevelUpModal'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -35,6 +36,7 @@ export default function VerbBlitz() {
   const [heard, setHeard] = useState('')
   const [finished, setFinished] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
+  const [levelUp, setLevelUp] = useState(null)
   const roundsTotal = 10
 
   function startGame(selectedMode) {
@@ -85,9 +87,10 @@ export default function VerbBlitz() {
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(XP_REWARDS.verb_blitz * (correct / total)))
-    await awardXP(profile.id, xp, 'verb_blitz')
+    const result = await awardXP(profile.id, xp, 'verb_blitz')
     await refreshProfile()
     setXpEarned(xp)
+    if (result?.leveledUp) setLevelUp(result.newLevel)
   }
 
   // Mode selection
@@ -124,6 +127,7 @@ export default function VerbBlitz() {
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl">
           Try again
         </button>
+        {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
       </div>
     )
   }

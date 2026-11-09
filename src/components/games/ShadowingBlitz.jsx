@@ -4,6 +4,7 @@ import { speak, startListening, scorePhonetic, isSpeechSupported } from '../../l
 import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { SHADOWING_SENTENCES } from '../../data/scenarios'
 import { pickItems } from '../../lib/gameQueue'
+import LevelUpModal from '../ui/LevelUpModal'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -27,6 +28,7 @@ export default function ShadowingBlitz() {
   const [lastScore, setLastScore] = useState(null)
   const [scores, setScores] = useState([])
   const [xpEarned, setXpEarned] = useState(0)
+  const [levelUp, setLevelUp] = useState(null)
   const roundsTotal = Math.min(6, sentences.length)
 
   useEffect(() => {
@@ -71,9 +73,10 @@ export default function ShadowingBlitz() {
     const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
     const xp = Math.round(XP_REWARDS.shadowing * (avg / 100))
     const earned = Math.max(5, xp)
-    await awardXP(profile.id, earned, 'shadowing')
+    const result = await awardXP(profile.id, earned, 'shadowing')
     await refreshProfile()
     setXpEarned(earned)
+    if (result?.leveledUp) setLevelUp(result.newLevel)
   }
 
   const roundNum = roundsTotal - queue.length + (state === STATES.RESULT || state === STATES.IDLE ? 1 : 0)
@@ -89,6 +92,7 @@ export default function ShadowingBlitz() {
         <button onClick={() => window.location.reload()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
           Try again
         </button>
+        {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
       </div>
     )
   }

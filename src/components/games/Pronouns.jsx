@@ -4,6 +4,7 @@ import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { PRONOUNS, PRONOUN_CATEGORIES } from '../../data/pronouns'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
+import LevelUpModal from '../ui/LevelUpModal'
 import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
@@ -36,6 +37,7 @@ export default function Pronouns() {
   const [score, setScore] = useState({ correct: 0, wrong: 0 })
   const [finished, setFinished] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
+  const [levelUp, setLevelUp] = useState(null)
 
   const availableCategories = [...new Set(eligible.map(p => p.type))]
   const roundsTotal = 10
@@ -88,9 +90,10 @@ export default function Pronouns() {
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(20 * (correct / total)))
-    await awardXP(profile.id, xp, 'pronouns')
+    const result = await awardXP(profile.id, xp, 'pronouns')
     await refreshProfile()
     setXpEarned(xp)
+    if (result?.leveledUp) setLevelUp(result.newLevel)
   }
 
   // Mode selection
@@ -146,6 +149,7 @@ export default function Pronouns() {
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl">
           Try again
         </button>
+        {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
       </div>
     )
   }

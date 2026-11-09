@@ -6,6 +6,7 @@ import { LISTENING_WORDS } from '../../data/scenarios'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { translateWord } from '../../lib/groq'
 import { pickItems } from '../../lib/gameQueue'
+import LevelUpModal from '../ui/LevelUpModal'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -83,6 +84,7 @@ export default function ListeningMatch() {
   const [finished, setFinished] = useState(false)
   const [hasSpoken, setHasSpoken] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
+  const [levelUp, setLevelUp] = useState(null)
 
   useEffect(() => {
     const items = pickItems('eq_listening', wordList, 8)
@@ -118,9 +120,10 @@ export default function ListeningMatch() {
     playXP()
     const xp = Math.round(XP_REWARDS.listening_match * (score.correct / Math.max(score.total, 1)))
     const earned = Math.max(5, xp)
-    await awardXP(profile.id, earned, 'listening_match')
+    const result = await awardXP(profile.id, earned, 'listening_match')
     await refreshProfile()
     setXpEarned(earned)
+    if (result?.leveledUp) setLevelUp(result.newLevel)
   }
 
   if (finished) {
@@ -136,6 +139,7 @@ export default function ListeningMatch() {
         >
           Play again
         </button>
+        {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
       </div>
     )
   }

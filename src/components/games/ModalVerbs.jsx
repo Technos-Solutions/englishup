@@ -4,6 +4,7 @@ import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
 import { MODAL_EXERCISES } from '../../data/modals'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
+import LevelUpModal from '../ui/LevelUpModal'
 import { pickItems } from '../../lib/gameQueue'
 
 function shuffle(arr) {
@@ -30,6 +31,7 @@ export default function ModalVerbs() {
   const [score, setScore] = useState({ correct: 0, wrong: 0 })
   const [finished, setFinished] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
+  const [levelUp, setLevelUp] = useState(null)
   const roundsTotal = Math.min(10, eligible.length)
 
   function startGame(selectedMode) {
@@ -76,9 +78,10 @@ export default function ModalVerbs() {
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(25 * (correct / total)))
-    await awardXP(profile.id, xp, 'modal_verbs')
+    const result = await awardXP(profile.id, xp, 'modal_verbs')
     await refreshProfile()
     setXpEarned(xp)
+    if (result?.leveledUp) setLevelUp(result.newLevel)
   }
 
   function renderSentence(sentence, answer, isRevealed) {
@@ -127,6 +130,7 @@ export default function ModalVerbs() {
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl">
           Try again
         </button>
+        {levelUp && <LevelUpModal level={levelUp} onClose={() => setLevelUp(null)} />}
       </div>
     )
   }
