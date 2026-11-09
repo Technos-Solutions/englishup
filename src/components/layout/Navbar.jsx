@@ -21,7 +21,7 @@ export default function Navbar() {
     <nav className="bg-white border-b-2 border-gray-100 sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-2 font-extrabold text-indigo-600 text-xl">
-          🎓 <span>EnglishUp</span>
+          🎓 <span>EnjoyTalk</span>
         </Link>
 
         <div className="hidden sm:flex items-center gap-1">

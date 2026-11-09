@@ -1,4 +1,4 @@
--- EnglishUp Database Schema
+-- EnjoyTalk Database Schema
 -- Run this in your Supabase SQL editor
 
 -- Profiles (extends auth.users)
