@@ -2,7 +2,7 @@ import Navbar from './Navbar'
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50/60 via-slate-50 to-slate-50">
       <Navbar />
       <main className="max-w-5xl mx-auto px-4 py-6 pb-20 sm:pb-6">
         {children}

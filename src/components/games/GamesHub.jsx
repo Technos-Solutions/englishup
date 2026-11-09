@@ -80,8 +80,8 @@ export default function GamesHub() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">🎮 Games</h1>
-        <p className="text-gray-500 mt-1">Tots els jocs disponibles sempre. El nivell indica la dificultat.</p>
+        <h1 className="text-3xl text-gray-900">🎮 Games</h1>
+        <p className="text-gray-500 mt-1 font-semibold">Tots els jocs disponibles sempre. El nivell indica la dificultat.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -90,17 +90,17 @@ export default function GamesHub() {
             <div className="flex items-start justify-between mb-3">
               <span className="text-3xl">{g.icon}</span>
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${g.badge}`}>
+                <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${g.badge}`}>
                   {g.level}
                 </span>
                 <InfoTooltip text={g.info} />
               </div>
             </div>
-            <h3 className="font-bold text-gray-900 mb-1">{g.title}</h3>
-            <p className="text-sm text-gray-500 mb-4">{g.description}</p>
+            <h3 className="font-extrabold text-gray-900 mb-1 text-lg">{g.title}</h3>
+            <p className="text-sm text-gray-500 mb-4 font-semibold">{g.description}</p>
             <Link
               to={g.to}
-              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl text-sm transition-colors"
+              className="btn-primary inline-block text-sm py-2.5 px-5"
             >
               Play now →
             </Link>
