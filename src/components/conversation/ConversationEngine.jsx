@@ -85,9 +85,13 @@ export default function ConversationEngine() {
     setLoading(true)
 
     const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary(), keyVocab.map(w => w.word))
+    // Cap how much history we resend — otherwise every turn gets more
+    // expensive than the last and long conversations hit rate/context
+    // limits. The AI only needs recent context to stay coherent anyway.
+    const recentMessages = newMessages.slice(-16)
     const groqMessages = [
       { role: 'system', content: systemPrompt },
-      ...newMessages.map(({ role, content }) => ({ role, content })),
+      ...recentMessages.map(({ role, content }) => ({ role, content })),
     ]
 
     try {
