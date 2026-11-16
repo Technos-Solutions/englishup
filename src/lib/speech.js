@@ -61,12 +61,13 @@ function speakBrowser(text, onEnd) {
 
 // --- Premium voice (Kokoro, 100% local in the browser via WASM) ---
 // Free, offline, no account — but a ~80MB model to download once. Opt-in
-// only, and always falls back to the browser's own voice if it's not
-// enabled, not loaded yet, or fails for any reason.
+// only, always falls back to the browser's own voice on any failure, and
+// runs entirely in a Web Worker so a slow device never freezes the UI
+// while loading or generating — it only ever makes things slower, never
+// unresponsive.
 
 const PREMIUM_KEY = 'eu_premium_voice'
 const PREMIUM_VOICE_ID_KEY = 'eu_premium_voice_id'
-const KOKORO_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX'
 
 export const PREMIUM_VOICES = [
   { id: 'af_heart', name: 'Emma', flag: '🇺🇸', accent: 'American', emoji: '👩‍💻' },
@@ -75,16 +76,41 @@ export const PREMIUM_VOICES = [
   { id: 'bm_fable', name: 'James', flag: '🇬🇧', accent: 'British', emoji: '👨‍💼' },
 ]
 
-let premiumTTS = null
-let premiumLoadPromise = null
+let premiumWorker = null
+let premiumReady = false
 let premiumAudioEl = null
+let reqId = 0
+
+function getPremiumWorker() {
+  if (!premiumWorker) {
+    premiumWorker = new Worker(new URL('../workers/kokoroWorker.js', import.meta.url), { type: 'module' })
+  }
+  return premiumWorker
+}
+
+function callPremiumWorker(type, payload, onProgress) {
+  return new Promise((resolve, reject) => {
+    const id = ++reqId
+    const worker = getPremiumWorker()
+    function handleMessage(e) {
+      const msg = e.data
+      if (msg.type === 'progress') { onProgress?.(msg.percent); return }
+      if (msg.id !== id) return
+      worker.removeEventListener('message', handleMessage)
+      if (msg.type === 'error') reject(new Error(msg.message))
+      else resolve(msg)
+    }
+    worker.addEventListener('message', handleMessage)
+    worker.postMessage({ type, id, payload })
+  })
+}
 
 export function isPremiumVoiceEnabled() {
   return typeof window !== 'undefined' && localStorage.getItem(PREMIUM_KEY) === 'on'
 }
 
 export function isPremiumVoiceReady() {
-  return premiumTTS !== null
+  return premiumReady
 }
 
 export function getSelectedPremiumVoice() {
@@ -103,40 +129,14 @@ function withTimeout(promise, ms, message) {
 }
 
 // Downloads (first time only — cached by the browser after) and loads the
-// Kokoro model. Call with onProgress(percent) to show a progress bar.
-// Never auto-run this on app load — only in direct response to the user
-// opting in — so a device that struggles with it is never stuck retrying
-// on every visit.
+// Kokoro model, inside the worker. Call with onProgress(percent) to show a
+// progress bar. Never auto-run this on app load — only in direct response
+// to the user opting in — so a device that struggles with it is never
+// stuck retrying on every visit.
 export async function enablePremiumVoice(onProgress) {
-  if (!premiumTTS) {
-    if (!premiumLoadPromise) {
-      premiumLoadPromise = (async () => {
-        const [{ KokoroTTS }, { env }] = await Promise.all([
-          import('kokoro-js'),
-          import('@huggingface/transformers'),
-        ])
-        // Multi-threaded WASM needs cross-origin isolation (COOP/COEP
-        // headers) to use SharedArrayBuffer. We don't set those, and on
-        // some mobile browsers trying anyway can hang instead of falling
-        // back cleanly — force single-threaded to avoid that entirely.
-        env.backends.onnx.wasm.numThreads = 1
-        return KokoroTTS.from_pretrained(KOKORO_MODEL_ID, {
-          dtype: 'q8',
-          device: 'wasm',
-          progress_callback: (data) => {
-            if (onProgress && data.status === 'progress' && data.total) {
-              onProgress(Math.round((data.loaded / data.total) * 100))
-            }
-          },
-        })
-      })()
-    }
-    try {
-      premiumTTS = await withTimeout(premiumLoadPromise, 90000, 'Timed out loading the premium voice')
-    } catch (err) {
-      premiumLoadPromise = null
-      throw err
-    }
+  if (!premiumReady) {
+    await withTimeout(callPremiumWorker('load', {}, onProgress), 120000, 'Timed out loading the premium voice')
+    premiumReady = true
   }
   localStorage.setItem(PREMIUM_KEY, 'on')
 }
@@ -145,15 +145,23 @@ export function disablePremiumVoice() {
   localStorage.setItem(PREMIUM_KEY, 'off')
 }
 
+async function playWav(wav, onEnd) {
+  if (isTTSSupported()) window.speechSynthesis.cancel()
+  if (premiumAudioEl) premiumAudioEl.pause()
+  const url = URL.createObjectURL(new Blob([wav], { type: 'audio/wav' }))
+  premiumAudioEl = new Audio(url)
+  premiumAudioEl.onended = () => { URL.revokeObjectURL(url); onEnd?.() }
+  await premiumAudioEl.play()
+}
+
 async function speakPremium(text, onEnd) {
   try {
-    if (isTTSSupported()) window.speechSynthesis.cancel()
-    if (premiumAudioEl) premiumAudioEl.pause()
-    const audio = await premiumTTS.generate(text, { voice: getSelectedPremiumVoice() })
-    const url = URL.createObjectURL(audio.toBlob())
-    premiumAudioEl = new Audio(url)
-    premiumAudioEl.onended = () => { URL.revokeObjectURL(url); if (onEnd) onEnd() }
-    await premiumAudioEl.play()
+    const { wav } = await withTimeout(
+      callPremiumWorker('generate', { text, voice: getSelectedPremiumVoice() }),
+      30000,
+      'Timed out generating premium voice audio'
+    )
+    await playWav(wav, onEnd)
   } catch (err) {
     console.error('Premium voice failed, falling back to browser voice', err)
     speakBrowser(text, onEnd)
@@ -161,15 +169,14 @@ async function speakPremium(text, onEnd) {
 }
 
 export async function previewPremiumVoice(voiceId, name) {
-  if (!premiumTTS) return
+  if (!premiumReady) return
   try {
-    if (isTTSSupported()) window.speechSynthesis.cancel()
-    if (premiumAudioEl) premiumAudioEl.pause()
-    const audio = await premiumTTS.generate(`Hello! My name is ${name}.`, { voice: voiceId })
-    const url = URL.createObjectURL(audio.toBlob())
-    premiumAudioEl = new Audio(url)
-    premiumAudioEl.onended = () => URL.revokeObjectURL(url)
-    await premiumAudioEl.play()
+    const { wav } = await withTimeout(
+      callPremiumWorker('generate', { text: `Hello! My name is ${name}.`, voice: voiceId }),
+      30000,
+      'Timed out generating premium voice audio'
+    )
+    await playWav(wav)
   } catch (err) {
     console.error('previewPremiumVoice failed', err)
   }
