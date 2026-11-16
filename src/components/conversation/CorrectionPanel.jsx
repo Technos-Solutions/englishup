@@ -84,6 +84,12 @@ export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => { onClose(); navigate('/games/review') }}
+                className="mt-3 w-full bg-violet-50 hover:bg-violet-100 text-violet-700 font-semibold py-2.5 rounded-xl text-sm transition-colors"
+              >
+                🎯 Practicar aquestes frases en veu alta
+              </button>
             </div>
           )}
 

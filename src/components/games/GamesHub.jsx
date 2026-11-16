@@ -52,6 +52,16 @@ const GAMES = [
     color: 'bg-teal-50 border-teal-200',
     badge: 'bg-teal-100 text-teal-700',
   },
+  {
+    to: '/games/review',
+    icon: '🎯',
+    title: 'Mistake Review',
+    description: 'Repassa i repeteix en veu alta les teves frases amb errors reals.',
+    info: 'Agafa els errors reals que has comès a les teves converses amb la IA i te\'ls torna a posar perquè els repeteixis en veu alta fins dir-los bé. El millor repàs: practicar els teus propis errors, no frases genèriques.',
+    level: 'Personalitzat',
+    color: 'bg-violet-50 border-violet-200',
+    badge: 'bg-violet-100 text-violet-700',
+  },
 ]
 
 function InfoTooltip({ text }) {

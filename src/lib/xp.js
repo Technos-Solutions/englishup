@@ -8,6 +8,7 @@ export const XP_REWARDS = {
   verb_blitz: 10,
   roleplay: 20,
   conversation: 30,
+  mistake_review: 15,
 }
 
 export function calculateConversationXP(fluencyScore) {
