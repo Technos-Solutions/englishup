@@ -154,6 +154,12 @@ export default function ConversationEngine() {
     setAnalyzing(false)
   }
 
+  function continueConversation() {
+    setAnalysis(null)
+    setXpEarned(0)
+    setEnded(false)
+  }
+
   if (warmup) {
     return <VocabWarmup scenario={warmup} words={warmupWords} loading={warmupLoading} onDone={finishWarmup} />
   }
@@ -374,6 +380,7 @@ export default function ConversationEngine() {
           analysis={analysis}
           xpEarned={xpEarned}
           onClose={() => navigate('/dashboard')}
+          onContinue={continueConversation}
         />
       )}
 

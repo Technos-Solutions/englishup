@@ -24,7 +24,7 @@ function detectGrammarTopics(errors) {
   return [...found].filter(tag => TAG_TO_TOPIC[tag])
 }
 
-export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
+export default function CorrectionPanel({ analysis, xpEarned, onClose, onContinue }) {
   const navigate = useNavigate()
   if (!analysis) return null
 
@@ -139,9 +139,15 @@ export default function CorrectionPanel({ analysis, xpEarned, onClose }) {
             </div>
           )}
 
+          {onContinue && (
+            <button onClick={onContinue}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors">
+              💬 Segueix aquesta conversa
+            </button>
+          )}
           <button onClick={onClose}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors">
-            Continue learning 🚀
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors">
+            Acabar i tornar al Dashboard
           </button>
         </div>
       </div>
