@@ -95,13 +95,31 @@ export function setSelectedPremiumVoice(id) {
   localStorage.setItem(PREMIUM_VOICE_ID_KEY, id)
 }
 
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ])
+}
+
 // Downloads (first time only — cached by the browser after) and loads the
 // Kokoro model. Call with onProgress(percent) to show a progress bar.
+// Never auto-run this on app load — only in direct response to the user
+// opting in — so a device that struggles with it is never stuck retrying
+// on every visit.
 export async function enablePremiumVoice(onProgress) {
   if (!premiumTTS) {
     if (!premiumLoadPromise) {
       premiumLoadPromise = (async () => {
-        const { KokoroTTS } = await import('kokoro-js')
+        const [{ KokoroTTS }, { env }] = await Promise.all([
+          import('kokoro-js'),
+          import('@huggingface/transformers'),
+        ])
+        // Multi-threaded WASM needs cross-origin isolation (COOP/COEP
+        // headers) to use SharedArrayBuffer. We don't set those, and on
+        // some mobile browsers trying anyway can hang instead of falling
+        // back cleanly — force single-threaded to avoid that entirely.
+        env.backends.onnx.wasm.numThreads = 1
         return KokoroTTS.from_pretrained(KOKORO_MODEL_ID, {
           dtype: 'q8',
           device: 'wasm',
@@ -114,7 +132,7 @@ export async function enablePremiumVoice(onProgress) {
       })()
     }
     try {
-      premiumTTS = await premiumLoadPromise
+      premiumTTS = await withTimeout(premiumLoadPromise, 90000, 'Timed out loading the premium voice')
     } catch (err) {
       premiumLoadPromise = null
       throw err
@@ -125,12 +143,6 @@ export async function enablePremiumVoice(onProgress) {
 
 export function disablePremiumVoice() {
   localStorage.setItem(PREMIUM_KEY, 'off')
-}
-
-// If the user enabled it in a previous visit, silently reload it from the
-// browser's cache (near-instant — no re-download) so it's ready to use.
-if (typeof window !== 'undefined' && isPremiumVoiceEnabled()) {
-  enablePremiumVoice().catch((err) => console.error('Premium voice reload failed', err))
 }
 
 async function speakPremium(text, onEnd) {
