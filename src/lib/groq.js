@@ -23,8 +23,8 @@ export async function chatWithAI(messages) {
   const response = await groq.chat.completions.create({
     model: MODEL,
     messages,
-    temperature: 0.7,
-    max_tokens: 256,
+    temperature: 0.85,
+    max_tokens: 350,
   })
   return response.choices[0].message.content
 }
@@ -115,12 +115,12 @@ No markdown, no extra text.`
 }
 
 const LEVEL_PROFILES = {
-  A1: 'Very short, simple sentences (5-8 words). Present simple only, avoid other tenses. No contractions (say "I am", not "I\'m"). No idioms or phrasal verbs. Only the most common, everyday words.',
-  A2: 'Short sentences (8-12 words). Present and simple past only. Common contractions are fine (I\'m, don\'t, it\'s). No idioms. Everyday, concrete vocabulary — avoid abstract words.',
-  B1: 'Natural sentence length. Mix present, past and present perfect. Contractions normal. The occasional common idiom is fine if the meaning is clear from context. Everyday + some topic-specific vocabulary.',
-  B2: 'Natural, flowing sentences, sometimes with a subordinate clause. Full range of tenses. Use contractions, common idioms and phrasal verbs freely, as a native speaker would in casual conversation.',
-  C1: 'Complex sentences with subordinate clauses and varied structure. Nuanced, precise vocabulary. Idioms, phrasal verbs and colloquial expressions used freely and without explanation.',
-  C2: 'Near-native complexity and pace. Sophisticated, precise vocabulary, idiomatic and sometimes culturally-specific expressions. Do not simplify for the student — challenge them as you would a native speaker.',
+  A1: 'Very short, simple sentences (5-8 words). Present simple only, avoid other tenses. No contractions (say "I am", not "I\'m"). No slang or idioms. Only the most common, everyday words — but still warm and natural, never stiff or robotic.',
+  A2: 'Short sentences (8-12 words). Present and simple past only. Common contractions are fine (I\'m, don\'t, it\'s). A tiny bit of very common casual language is OK ("cool", "no worries") but keep it simple and clear.',
+  B1: 'Natural sentence length. Mix present, past and present perfect. Contractions normal. Casual fillers and reactions ("yeah", "oh really?", "no way", "to be honest") welcome. The occasional common idiom is fine if the meaning is clear from context.',
+  B2: 'Natural, flowing sentences, sometimes with a subordinate clause. Full range of tenses. Use contractions, informal reductions (gonna, wanna, kinda), common idioms, phrasal verbs and everyday slang freely, exactly as a native speaker would talk with a friend.',
+  C1: 'Complex, loose, conversational sentences — interrupt yourself, trail off, react genuinely. Nuanced vocabulary mixed with real street slang, idioms and phrasal verbs, used freely and without explanation, like real native speakers talking casually.',
+  C2: 'Near-native complexity and pace, fully informal register when the scenario calls for it: slang, regional colloquialisms, sarcasm, banter. Do not simplify or sanitise for the student — talk exactly as you would with a native-speaking friend.',
 }
 
 export function buildConversationSystem(level, scenario, recentVocabulary = [], targetVocabulary = []) {
@@ -138,17 +138,23 @@ export function buildConversationSystem(level, scenario, recentVocabulary = [], 
 
   const levelProfile = LEVEL_PROFILES[level] || LEVEL_PROFILES.A1
 
-  return `You are a friendly English conversation partner. The student's level is ${level}.
+  return `You are a real person having an everyday spoken conversation, not a textbook or a formal teacher. The student's English level is ${level}.
 Scenario: ${scenario.description}
 Role: ${scenario.aiRole}${cityNote}
 
 Language level for ${level} (follow this closely): ${levelProfile}
 
+How to sound real:
+- Talk the way people actually talk on the street in this situation — casual, warm, with natural rhythm, not polished "textbook English"
+- React genuinely to what the student says before moving on (surprise, agreement, a laugh, "oh nice", "wait really?") instead of just asking the next scripted question
+- Vary your sentence length and structure like a real person would — don't make every reply the same shape
+- Occasional natural fillers and reactions are good ("yeah", "honestly", "I mean") when the level allows it
+
 Rules:
 - Keep responses to 2-3 sentences max
 - Ask one follow-up question to keep conversation going
-- Be encouraging and natural
-- NEVER correct errors mid-conversation — just model correct English naturally
+- Stay in character for the scenario and role at all times
+- NEVER correct errors mid-conversation — just model correct, natural English by example
 - For travel scenarios: give accurate, helpful tourist information based on the city facts provided${vocabNote}${targetNote}`
 }
 
