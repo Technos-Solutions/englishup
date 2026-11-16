@@ -104,7 +104,15 @@ export default function ConversationEngine() {
       setMessages(prev => [...prev, aiMsg])
       if (inputMode === 'voice') speak(reply)
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: '(Connection error — please try again)' }])
+      console.error('chatWithAI failed', err)
+      let detail = err?.error?.error?.message
+      if (!detail && err?.message) {
+        const match = err.message.match(/\{.*\}/s)
+        try { detail = match ? JSON.parse(match[0])?.error?.message : null } catch {}
+        detail = detail || err.message
+      }
+      const content = detail ? `(Connection error: ${detail})` : '(Connection error — please try again)'
+      setMessages(prev => [...prev, { role: 'assistant', content }])
     }
     setLoading(false)
   }

@@ -5,7 +5,9 @@ const groq = new Groq({
   dangerouslyAllowBrowser: true,
 })
 
-const MODEL = 'llama-3.3-70b-versatile'
+// llama-3.3-70b-versatile was retired by Groq (shutdown 2026-08-16);
+// openai/gpt-oss-120b is Groq's suggested replacement.
+const MODEL = 'openai/gpt-oss-120b'
 
 // Models sometimes wrap JSON replies in markdown fences or add stray text
 // around them despite instructions not to — strip that before parsing.
