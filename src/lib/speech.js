@@ -75,13 +75,29 @@ export function startListening(onResult, onError) {
   recognition.interimResults = false
   recognition.maxAlternatives = 1
 
+  // Whatever happens — a result, an error, or the browser just giving up
+  // without either (e.g. 'no-speech') — settle exactly once, so the UI
+  // never gets stuck on "Listening…" forever.
+  let settled = false
+
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript
-    onResult(transcript)
+    settled = true
+    onResult(event.results[0][0].transcript)
   }
   recognition.onerror = (event) => {
-    if (event.error !== 'no-speech') onError(event.error)
+    settled = true
+    onError(event.error === 'no-speech' ? "Didn't catch that" : event.error)
   }
+  recognition.onend = () => {
+    if (!settled) {
+      settled = true
+      onError("Didn't catch that")
+    }
+  }
+
+  const stop = recognition.stop.bind(recognition)
+  recognition.stop = () => { settled = true; stop() }
+
   recognition.start()
   return recognition
 }
