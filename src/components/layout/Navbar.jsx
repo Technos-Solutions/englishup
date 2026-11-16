@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -92,7 +93,10 @@ export default function Navbar() {
         </button>
       </div>
 
-      {showSettings && <VoiceSettings onClose={() => setShowSettings(false)} />}
+      {showSettings && createPortal(
+        <VoiceSettings onClose={() => setShowSettings(false)} />,
+        document.body
+      )}
     </nav>
   )
 }
