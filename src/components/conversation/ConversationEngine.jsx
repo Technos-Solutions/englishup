@@ -26,7 +26,7 @@ export default function ConversationEngine() {
   const [pendingMode, setPendingMode] = useState(false)
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
-  const [ended, setEnded] = useState(false)
+  const [reviewedCount, setReviewedCount] = useState(0)
   const [analysis, setAnalysis] = useState(null)
   const [xpEarned, setXpEarned] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
@@ -76,7 +76,7 @@ export default function ConversationEngine() {
   }
 
   async function handleUserMessage(text, inputMode) {
-    if (loading || ended) return
+    if (loading) return
     stopSpeaking()
 
     const userMsg = { role: 'user', content: text }
@@ -121,23 +121,21 @@ export default function ConversationEngine() {
     setLoading(false)
   }
 
-  async function endConversation() {
+  async function reviewMistakes() {
     stopSpeaking()
-    setEnded(true)
-    setAnalyzing(true)
 
     const studentMessages = messages
       .filter(m => m.role === 'user')
       .map(m => m.content)
 
-    if (studentMessages.length === 0) {
-      setAnalyzing(false)
-      navigate('/dashboard')
-      return
-    }
+    // Only analyse what's new since the last review, so re-reviewing
+    // doesn't re-score (and re-reward) the same messages again.
+    const newMessages = studentMessages.slice(reviewedCount)
+    if (newMessages.length === 0) return
 
+    setAnalyzing(true)
     try {
-      const result = await analyzeConversation(studentMessages, profile?.level || 'A1')
+      const result = await analyzeConversation(newMessages, profile?.level || 'A1')
       const xp = calculateConversationXP(result.fluency_score || 70)
       const awardResult = await awardXP(profile.id, xp, 'conversation', {
         fluency_score: result.fluency_score,
@@ -146,10 +144,11 @@ export default function ConversationEngine() {
       await refreshProfile()
       setXpEarned(xp)
       setAnalysis(result)
+      setReviewedCount(studentMessages.length)
       if (awardResult?.leveledUp) setLevelUp(awardResult.newLevel)
       if (result.new_words?.length) saveVocabulary(result.new_words)
-    } catch {
-      navigate('/dashboard')
+    } catch (err) {
+      console.error('reviewMistakes failed', err)
     }
     setAnalyzing(false)
   }
@@ -157,7 +156,6 @@ export default function ConversationEngine() {
   function continueConversation() {
     setAnalysis(null)
     setXpEarned(0)
-    setEnded(false)
   }
 
   if (warmup) {
@@ -300,14 +298,13 @@ export default function ConversationEngine() {
             <p className="text-xs text-indigo-300">Level {scenario.level}</p>
           </div>
         </div>
-        {!ended && (
-          <button
-            onClick={endConversation}
-            className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-xl text-sm transition-colors"
-          >
-            End & Analyse
-          </button>
-        )}
+        <button
+          onClick={reviewMistakes}
+          disabled={analyzing}
+          className="bg-violet-50 hover:bg-violet-100 text-violet-700 font-semibold px-4 py-2 rounded-xl text-sm transition-colors disabled:opacity-50"
+        >
+          📊 Revisa els errors
+        </button>
       </div>
 
       {/* Messages */}
@@ -370,9 +367,7 @@ export default function ConversationEngine() {
       </div>
 
       {/* Input */}
-      {!ended && (
-        <SpeechInput onSubmit={handleUserMessage} disabled={loading} />
-      )}
+      <SpeechInput onSubmit={handleUserMessage} disabled={loading} />
 
       {/* Correction panel */}
       {analysis && (
