@@ -26,9 +26,15 @@ export async function chatWithAI(messages) {
     model: MODEL,
     messages,
     temperature: 0.85,
-    max_tokens: 350,
+    max_tokens: 600,
+    reasoning_effort: 'low',
   })
-  return response.choices[0].message.content
+  const content = response.choices[0].message.content
+  if (!content || !content.trim()) {
+    console.error('chatWithAI: empty content in response', response.choices[0])
+    return "Sorry, I didn't quite catch that — could you say it again?"
+  }
+  return content
 }
 
 export async function analyzeConversation(studentMessages, level) {
@@ -57,7 +63,8 @@ Respond with ONLY valid JSON (no markdown, no extra text):
     model: MODEL,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.3,
-    max_tokens: 1024,
+    max_tokens: 1500,
+    reasoning_effort: 'low',
   })
 
   try {
@@ -84,10 +91,11 @@ export async function translateWord(word, context) {
     model: MODEL,
     messages: [{ role: 'user', content: `Translate the English word "${word}" to Catalan. Context: "${context}". Reply with ONLY the Catalan translation, nothing else. Maximum 6 words.` }],
     temperature: 0,
-    max_tokens: 20,
+    max_tokens: 100,
+    reasoning_effort: 'low',
   })
 
-  const translation = response.choices[0].message.content.trim()
+  const translation = (response.choices[0].message.content || '').trim() || '—'
   translationCache.set(key, translation)
   return translation
 }
@@ -106,7 +114,8 @@ No markdown, no extra text.`
     model: MODEL,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1,
-    max_tokens: 150,
+    max_tokens: 400,
+    reasoning_effort: 'low',
   })
 
   try {
@@ -176,7 +185,8 @@ Where translation_ca is the Catalan translation, and example is a short natural 
     model: MODEL,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.5,
-    max_tokens: 500,
+    max_tokens: 800,
+    reasoning_effort: 'low',
   })
 
   try {
