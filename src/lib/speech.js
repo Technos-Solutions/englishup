@@ -47,7 +47,7 @@ export function setCharacterVoice(voice) {
   _englishVoice = voice
 }
 
-export function speak(text, onEnd) {
+function speakBrowser(text, onEnd) {
   if (!isTTSSupported()) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
@@ -59,8 +59,121 @@ export function speak(text, onEnd) {
   window.speechSynthesis.speak(utterance)
 }
 
+// --- Premium voice (Kokoro, 100% local in the browser via WASM) ---
+// Free, offline, no account — but a ~80MB model to download once. Opt-in
+// only, and always falls back to the browser's own voice if it's not
+// enabled, not loaded yet, or fails for any reason.
+
+const PREMIUM_KEY = 'eu_premium_voice'
+const PREMIUM_VOICE_ID_KEY = 'eu_premium_voice_id'
+const KOKORO_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX'
+
+export const PREMIUM_VOICES = [
+  { id: 'af_heart', name: 'Emma', flag: '🇺🇸', accent: 'American', emoji: '👩‍💻' },
+  { id: 'am_michael', name: 'Jake', flag: '🇺🇸', accent: 'American', emoji: '🧑‍🎓' },
+  { id: 'bf_emma', name: 'Sophie', flag: '🇬🇧', accent: 'British', emoji: '👩‍🏫' },
+  { id: 'bm_fable', name: 'James', flag: '🇬🇧', accent: 'British', emoji: '👨‍💼' },
+]
+
+let premiumTTS = null
+let premiumLoadPromise = null
+let premiumAudioEl = null
+
+export function isPremiumVoiceEnabled() {
+  return typeof window !== 'undefined' && localStorage.getItem(PREMIUM_KEY) === 'on'
+}
+
+export function isPremiumVoiceReady() {
+  return premiumTTS !== null
+}
+
+export function getSelectedPremiumVoice() {
+  return localStorage.getItem(PREMIUM_VOICE_ID_KEY) || PREMIUM_VOICES[0].id
+}
+
+export function setSelectedPremiumVoice(id) {
+  localStorage.setItem(PREMIUM_VOICE_ID_KEY, id)
+}
+
+// Downloads (first time only — cached by the browser after) and loads the
+// Kokoro model. Call with onProgress(percent) to show a progress bar.
+export async function enablePremiumVoice(onProgress) {
+  if (!premiumTTS) {
+    if (!premiumLoadPromise) {
+      premiumLoadPromise = (async () => {
+        const { KokoroTTS } = await import('kokoro-js')
+        return KokoroTTS.from_pretrained(KOKORO_MODEL_ID, {
+          dtype: 'q8',
+          device: 'wasm',
+          progress_callback: (data) => {
+            if (onProgress && data.status === 'progress' && data.total) {
+              onProgress(Math.round((data.loaded / data.total) * 100))
+            }
+          },
+        })
+      })()
+    }
+    try {
+      premiumTTS = await premiumLoadPromise
+    } catch (err) {
+      premiumLoadPromise = null
+      throw err
+    }
+  }
+  localStorage.setItem(PREMIUM_KEY, 'on')
+}
+
+export function disablePremiumVoice() {
+  localStorage.setItem(PREMIUM_KEY, 'off')
+}
+
+// If the user enabled it in a previous visit, silently reload it from the
+// browser's cache (near-instant — no re-download) so it's ready to use.
+if (typeof window !== 'undefined' && isPremiumVoiceEnabled()) {
+  enablePremiumVoice().catch((err) => console.error('Premium voice reload failed', err))
+}
+
+async function speakPremium(text, onEnd) {
+  try {
+    if (isTTSSupported()) window.speechSynthesis.cancel()
+    if (premiumAudioEl) premiumAudioEl.pause()
+    const audio = await premiumTTS.generate(text, { voice: getSelectedPremiumVoice() })
+    const url = URL.createObjectURL(audio.toBlob())
+    premiumAudioEl = new Audio(url)
+    premiumAudioEl.onended = () => { URL.revokeObjectURL(url); if (onEnd) onEnd() }
+    await premiumAudioEl.play()
+  } catch (err) {
+    console.error('Premium voice failed, falling back to browser voice', err)
+    speakBrowser(text, onEnd)
+  }
+}
+
+export async function previewPremiumVoice(voiceId, name) {
+  if (!premiumTTS) return
+  try {
+    if (isTTSSupported()) window.speechSynthesis.cancel()
+    if (premiumAudioEl) premiumAudioEl.pause()
+    const audio = await premiumTTS.generate(`Hello! My name is ${name}.`, { voice: voiceId })
+    const url = URL.createObjectURL(audio.toBlob())
+    premiumAudioEl = new Audio(url)
+    premiumAudioEl.onended = () => URL.revokeObjectURL(url)
+    await premiumAudioEl.play()
+  } catch (err) {
+    console.error('previewPremiumVoice failed', err)
+  }
+}
+
+export function speak(text, onEnd) {
+  if (isPremiumVoiceEnabled() && isPremiumVoiceReady()) {
+    speakPremium(text, onEnd)
+    return
+  }
+  speakBrowser(text, onEnd)
+}
+
 export function stopSpeaking() {
   if (isTTSSupported()) window.speechSynthesis.cancel()
+  if (premiumAudioEl) { premiumAudioEl.pause(); premiumAudioEl = null }
 }
 
 export function startListening(onResult, onError) {
