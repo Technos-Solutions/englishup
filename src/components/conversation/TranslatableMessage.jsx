@@ -22,7 +22,8 @@ function WordTooltip({ word, sentence }) {
     if (tooltip) return
     timerRef.current = setTimeout(async () => {
       setLoading(true)
-      try { setTooltip(await translateWord(clean, sentence)) } catch {}
+      try { setTooltip(await translateWord(clean, sentence)) }
+      catch (err) { console.error('WordTooltip: translateWord failed', err) }
       setLoading(false)
     }, 350)
   }

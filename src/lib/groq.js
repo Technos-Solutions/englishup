@@ -87,17 +87,21 @@ export async function translateWord(word, context) {
   if (!key || key.length < 2) return null
   if (translationCache.has(key)) return translationCache.get(key)
 
-  const response = await groq.chat.completions.create({
-    model: MODEL,
-    messages: [{ role: 'user', content: `Translate the English word "${word}" to Catalan. Context: "${context}". Reply with ONLY the Catalan translation, nothing else. Maximum 6 words.` }],
-    temperature: 0,
-    max_tokens: 100,
-    reasoning_effort: 'low',
-  })
-
-  const translation = (response.choices[0].message.content || '').trim() || '—'
-  translationCache.set(key, translation)
-  return translation
+  try {
+    const response = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: 'user', content: `Translate the English word "${word}" to Catalan. Context: "${context}". Reply with ONLY the Catalan translation, nothing else. Maximum 6 words.` }],
+      temperature: 0,
+      max_tokens: 100,
+      reasoning_effort: 'low',
+    })
+    const translation = (response.choices[0].message.content || '').trim() || null
+    if (translation) translationCache.set(key, translation)
+    return translation
+  } catch (err) {
+    console.error('translateWord failed', word, err)
+    return null
+  }
 }
 
 export async function quickCorrection(userMessage, level) {
