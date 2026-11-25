@@ -6,6 +6,8 @@ import { awardXP, XP_REWARDS } from '../../lib/xp'
 import { getShadowingSentences } from '../../data/content'
 import { pickItems } from '../../lib/gameQueue'
 import LevelUpModal from '../ui/LevelUpModal'
+import { usePathGate } from '../../hooks/usePathGate'
+import LockedStep from '../path/LockedStep'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -24,6 +26,7 @@ export default function ShadowingBlitz() {
   const level = profile?.level || 'A1'
   const SHADOWING_SENTENCES = getShadowingSentences(lang)
   const sentences = SHADOWING_SENTENCES[level] || SHADOWING_SENTENCES.A1
+  const gate = usePathGate(s => s.type === 'game' && s.gameKey === 'shadowing')
 
   const [queue, setQueue] = useState([])
   const [current, setCurrent] = useState('')
@@ -76,13 +79,16 @@ export default function ShadowingBlitz() {
     const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
     const xp = Math.round(XP_REWARDS.shadowing * (avg / 100))
     const earned = Math.max(5, xp)
-    const result = await awardXP(profile.id, earned, 'shadowing')
+    const result = await awardXP(profile.id, earned, 'shadowing', {}, lang)
     await refreshProfile()
     setXpEarned(earned)
     if (result?.leveledUp) setLevelUp(result.newLevel)
   }
 
   const roundNum = roundsTotal - queue.length + (state === STATES.RESULT || state === STATES.IDLE ? 1 : 0)
+
+  if (gate.loading) return <div className="text-center text-indigo-200 py-12">Carregant…</div>
+  if (gate.locked) return <LockedStep />
 
   if (state === STATES.DONE) {
     const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0

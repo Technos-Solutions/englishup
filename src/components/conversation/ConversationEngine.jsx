@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { chatWithAI, analyzeConversation, buildConversationSystem, quickCorrection, generateKeyVocabulary } from '../../lib/groq'
@@ -7,6 +7,7 @@ import { speak, stopSpeaking } from '../../lib/speech'
 import { awardXP, calculateConversationXP } from '../../lib/xp'
 import { getScenarios } from '../../data/content'
 import { getRecentVocabulary, saveVocabulary } from '../../lib/vocabulary'
+import { getPathForLang, getCompletedStepIds, getCurrentStepIndex } from '../../lib/path'
 import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
 import TranslatableMessage from './TranslatableMessage'
@@ -18,6 +19,7 @@ export default function ConversationEngine() {
   const { profile, refreshProfile } = useAuth()
   const { lang, info } = useLanguage()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [scenario, setScenario] = useState(null)
   const [tab, setTab] = useState('general')
   const [realtimeMode, setRealtimeMode] = useState(false)
@@ -33,7 +35,9 @@ export default function ConversationEngine() {
   const [xpEarned, setXpEarned] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
   const [levelUp, setLevelUp] = useState(null)
+  const [pathCompleted, setPathCompleted] = useState(null)
   const bottomRef = useRef(null)
+  const deepLinkHandled = useRef(false)
 
   const order = ['A1','A2','B1','B2','C1','C2']
   const userIdx = order.indexOf(profile?.level || 'A1')
@@ -44,11 +48,44 @@ export default function ConversationEngine() {
     return scenarioIdx <= userIdx + 1
   })
 
+  const irishPath = getPathForLang(lang)
+
+  useEffect(() => {
+    if (!profile || !irishPath.length) return
+    getCompletedStepIds(profile.id, lang).then(setPathCompleted)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, lang])
+
+  function isScenarioLocked(scenarioId) {
+    if (!irishPath.length || !pathCompleted) return false
+    const step = irishPath.find(s => s.type === 'scenario' && s.scenarioId === scenarioId)
+    if (!step) return false
+    return irishPath.indexOf(step) > getCurrentStepIndex(irishPath, pathCompleted)
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Deep-link from the learning path (/conversation?scenario=ga-cafe) —
+  // jump straight into that scenario instead of showing the picker. Waits
+  // for the path-lock data to resolve first so a locked scenario can't
+  // slip through while pathCompleted is still null.
+  useEffect(() => {
+    if (deepLinkHandled.current) return
+    const wanted = searchParams.get('scenario')
+    if (!wanted) return
+    if (irishPath.length > 0 && pathCompleted === null) return
+    deepLinkHandled.current = true
+    const match = getScenarios(lang).find(s => s.id === wanted)
+    if (!match) return
+    if (isScenarioLocked(match.id)) { navigate('/path'); return }
+    startScenario(match)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathCompleted])
+
   async function startScenario(s) {
+    if (isScenarioLocked(s.id)) { navigate('/path'); return }
     setWarmup(s)
     setWarmupLoading(true)
     setWarmupWords([])
@@ -142,7 +179,7 @@ export default function ConversationEngine() {
       const awardResult = await awardXP(profile.id, xp, 'conversation', {
         fluency_score: result.fluency_score,
         corrections: result,
-      })
+      }, lang, scenario.id)
       await refreshProfile()
       setXpEarned(xp)
       setAnalysis(result)
@@ -206,20 +243,28 @@ export default function ConversationEngine() {
     const asClient = availableScenarios.filter(s => s.category === 'office-client')
     const asProvider = availableScenarios.filter(s => s.category === 'office-provider')
 
-    const ScenarioCard = (s) => (
-      <button
-        key={s.id}
-        onClick={() => startScenario(s)}
-        className="bg-white hover:bg-indigo-50 border-2 border-gray-100 hover:border-indigo-200 rounded-2xl p-5 text-left transition-all group"
-      >
-        <div className="text-3xl mb-2">{s.icon}</div>
-        <h3 className="font-bold text-gray-900 group-hover:text-indigo-700">{s.title}</h3>
-        <p className="text-sm text-gray-500 mt-0.5">{s.description}</p>
-        <span className="inline-block mt-2 text-xs font-semibold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
-          Level {s.level}
-        </span>
-      </button>
-    )
+    const ScenarioCard = (s) => {
+      const locked = isScenarioLocked(s.id)
+      return (
+        <button
+          key={s.id}
+          onClick={() => startScenario(s)}
+          disabled={locked}
+          className={`rounded-2xl p-5 text-left transition-all group border-2 ${
+            locked
+              ? 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'
+              : 'bg-white hover:bg-indigo-50 border-gray-100 hover:border-indigo-200'
+          }`}
+        >
+          <div className="text-3xl mb-2">{locked ? '🔒' : s.icon}</div>
+          <h3 className={`font-bold ${locked ? 'text-indigo-200' : 'text-gray-900 group-hover:text-indigo-700'}`}>{s.title}</h3>
+          <p className={`text-sm mt-0.5 ${locked ? 'text-indigo-300/60' : 'text-gray-500'}`}>{s.description}</p>
+          <span className={`inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded-full ${locked ? 'bg-white/10 text-indigo-200' : 'bg-indigo-50 text-indigo-600'}`}>
+            {locked ? "Bloquejat — segueix el camí" : `Level ${s.level}`}
+          </span>
+        </button>
+      )
+    }
 
     return (
       <div className="space-y-6">

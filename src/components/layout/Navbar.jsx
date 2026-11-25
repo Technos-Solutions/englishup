@@ -21,6 +21,7 @@ export default function Navbar() {
 
   const links = [
     { to: '/dashboard',   label: 'Home',     icon: '🏠' },
+    ...(lang === 'ga' ? [{ to: '/path', label: 'Camí', icon: '🗺️' }] : []),
     { to: '/games',       label: 'Games',    icon: '🎮' },
     { to: '/conversation',label: 'Talk',     icon: '🎙️' },
     { to: '/grammar',     label: 'Grammar',  icon: '📚' },

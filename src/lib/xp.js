@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { LEVELS } from '../data/levels'
 import { ACHIEVEMENTS } from '../data/achievements'
+import { markStepCompleteForActivity } from './path'
 
 export const XP_REWARDS = {
   listening_match: 10,
@@ -30,7 +31,7 @@ export function getProgressInLevel(xp) {
   return Math.min(100, Math.round((progress / range) * 100))
 }
 
-export async function awardXP(userId, amount, gameType, extraData = {}) {
+export async function awardXP(userId, amount, gameType, extraData = {}, lang = 'en', scenarioId = null) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('xp, level, streak, last_activity')
@@ -65,6 +66,12 @@ export async function awardXP(userId, amount, gameType, extraData = {}) {
   })
 
   await checkAchievements(userId, { xp: newXP, streak: newStreak, level: newLevel.code, gameType, ...extraData })
+
+  try {
+    await markStepCompleteForActivity(userId, lang, gameType, scenarioId)
+  } catch (err) {
+    console.error('markStepCompleteForActivity failed', err)
+  }
 
   return { newXP, newLevel, leveledUp, newStreak }
 }

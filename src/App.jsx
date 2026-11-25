@@ -16,6 +16,7 @@ import ModalVerbs from './components/games/ModalVerbs'
 import Pronouns from './components/games/Pronouns'
 import MistakeReview from './components/games/MistakeReview'
 import GrammarFocus from './components/grammar/GrammarFocus'
+import LearningPath from './components/path/LearningPath'
 import Ranking from './components/ranking/Ranking'
 import Trophies from './components/prizes/Trophies'
 
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/games/pronouns"     element={<ProtectedRoute><Pronouns /></ProtectedRoute>} />
           <Route path="/games/review"       element={<ProtectedRoute><MistakeReview /></ProtectedRoute>} />
           <Route path="/grammar"            element={<ProtectedRoute><GrammarFocus /></ProtectedRoute>} />
+          <Route path="/path"               element={<ProtectedRoute><LearningPath /></ProtectedRoute>} />
           <Route path="/ranking"            element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
           <Route path="/trophies"           element={<ProtectedRoute><Trophies /></ProtectedRoute>} />
 

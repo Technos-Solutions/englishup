@@ -7,6 +7,8 @@ import { getPronouns, getPronounCategories } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import LevelUpModal from '../ui/LevelUpModal'
 import { pickItems } from '../../lib/gameQueue'
+import { usePathGate } from '../../hooks/usePathGate'
+import LockedStep from '../path/LockedStep'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -27,6 +29,7 @@ export default function Pronouns() {
   const { lang, info } = useLanguage()
   const eligible = getPronouns(lang)
   const PRONOUN_CATEGORIES = getPronounCategories(lang)
+  const gate = usePathGate(s => s.type === 'game' && s.gameKey === 'pronouns')
 
   const [mode, setMode] = useState(null)
   const [category, setCategory] = useState('all')
@@ -41,6 +44,9 @@ export default function Pronouns() {
   const [finished, setFinished] = useState(false)
   const [xpEarned, setXpEarned] = useState(0)
   const [levelUp, setLevelUp] = useState(null)
+
+  if (gate.loading) return <div className="text-center text-indigo-200 py-12">Carregant…</div>
+  if (gate.locked) return <LockedStep />
 
   const availableCategories = [...new Set(eligible.map(p => p.type))]
   const roundsTotal = 10
@@ -93,7 +99,7 @@ export default function Pronouns() {
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(20 * (correct / total)))
-    const result = await awardXP(profile.id, xp, 'pronouns')
+    const result = await awardXP(profile.id, xp, 'pronouns', {}, lang)
     await refreshProfile()
     setXpEarned(xp)
     if (result?.leveledUp) setLevelUp(result.newLevel)

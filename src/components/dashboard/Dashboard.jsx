@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { supabase } from '../../lib/supabase'
+import { getPathForLang, getCompletedStepIds, getCurrentStepIndex, stepHref } from '../../lib/path'
 import XPBar from './XPBar'
 
 const QUICK_ACTIONS = [
@@ -13,7 +15,9 @@ const QUICK_ACTIONS = [
 
 export default function Dashboard() {
   const { profile, refreshProfile } = useAuth()
+  const { lang, info } = useLanguage()
   const [recentSessions, setRecentSessions] = useState([])
+  const [nextStep, setNextStep] = useState(undefined) // undefined = loading, null = none/done
 
   useEffect(() => {
     if (!profile) return
@@ -27,6 +31,16 @@ export default function Dashboard() {
       .then(({ data }) => setRecentSessions(data || []))
   }, [profile?.id])
 
+  useEffect(() => {
+    if (!profile) return
+    const path = getPathForLang(lang)
+    if (!path.length) { setNextStep(null); return }
+    getCompletedStepIds(profile.id, lang).then(completed => {
+      const idx = getCurrentStepIndex(path, completed)
+      setNextStep(idx < path.length ? path[idx] : null)
+    })
+  }, [profile?.id, lang])
+
   if (!profile) return <div className="flex items-center justify-center h-64 text-indigo-200">Loading…</div>
 
   const hour = new Date().getHours()
@@ -38,7 +52,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl text-white">{greeting}, {profile.username}! 👋</h1>
-          <p className="text-indigo-200 mt-0.5 font-semibold">Ready to practice English today?</p>
+          <p className="text-indigo-200 mt-0.5 font-semibold">Ready to practice {info.nativeName} today?</p>
         </div>
         {profile.streak > 0 && (
           <div className="bg-orange-400/10 border-2 border-orange-400/20 rounded-2xl px-4 py-2 text-center">
@@ -51,6 +65,30 @@ export default function Dashboard() {
 
       {/* XP Bar */}
       <XPBar xp={profile.xp} />
+
+      {/* Learning path continue card (Irish only, for now) */}
+      {lang === 'ga' && nextStep !== undefined && (
+        nextStep ? (
+          <Link
+            to={stepHref(nextStep)}
+            className="block bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-2xl p-5 text-white transition-all"
+          >
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200">🗺️ Camí d'Aprenentatge — Gaeilge</p>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-3xl">{nextStep.icon}</span>
+              <div className="flex-1">
+                <p className="font-extrabold text-lg">{nextStep.title}</p>
+                <p className="text-sm text-indigo-100">Continua des d'on ho vas deixar</p>
+              </div>
+              <span className="text-xl">→</span>
+            </div>
+          </Link>
+        ) : (
+          <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 text-center">
+            <p className="font-bold text-emerald-700">🎉 Has completat el camí guiat d'irlandès! Segueix practicant lliurement.</p>
+          </div>
+        )
+      )}
 
       {/* Quick actions */}
       <div>

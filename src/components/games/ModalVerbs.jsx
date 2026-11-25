@@ -7,6 +7,8 @@ import { getModalExercises } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import LevelUpModal from '../ui/LevelUpModal'
 import { pickItems } from '../../lib/gameQueue'
+import { usePathGate } from '../../hooks/usePathGate'
+import LockedStep from '../path/LockedStep'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -21,6 +23,7 @@ export default function ModalVerbs() {
   const { profile, refreshProfile } = useAuth()
   const { lang } = useLanguage()
   const eligible = getModalExercises(lang)
+  const gate = usePathGate(s => s.type === 'game' && s.gameKey === 'modal_verbs')
 
   const [mode, setMode] = useState(null)
   const [showCat, setShowCat] = useState(true)
@@ -35,6 +38,9 @@ export default function ModalVerbs() {
   const [xpEarned, setXpEarned] = useState(0)
   const [levelUp, setLevelUp] = useState(null)
   const roundsTotal = Math.min(10, eligible.length)
+
+  if (gate.loading) return <div className="text-center text-indigo-200 py-12">Carregant…</div>
+  if (gate.locked) return <LockedStep />
 
   function startGame(selectedMode) {
     const q = pickItems('eq_modals', eligible, roundsTotal)
@@ -80,7 +86,7 @@ export default function ModalVerbs() {
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(25 * (correct / total)))
-    const result = await awardXP(profile.id, xp, 'modal_verbs')
+    const result = await awardXP(profile.id, xp, 'modal_verbs', {}, lang)
     await refreshProfile()
     setXpEarned(xp)
     if (result?.leveledUp) setLevelUp(result.newLevel)

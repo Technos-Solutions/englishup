@@ -8,6 +8,8 @@ import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { translateWord } from '../../lib/groq'
 import { pickItems } from '../../lib/gameQueue'
 import LevelUpModal from '../ui/LevelUpModal'
+import { usePathGate } from '../../hooks/usePathGate'
+import LockedStep from '../path/LockedStep'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -78,6 +80,7 @@ export default function ListeningMatch() {
   const { profile, refreshProfile } = useAuth()
   const { lang } = useLanguage()
   const wordList = getListeningWords(lang)
+  const gate = usePathGate(s => s.type === 'game' && s.gameKey === 'listening_match')
 
   const [queue, setQueue] = useState([])
   const [current, setCurrent] = useState(null)
@@ -122,11 +125,14 @@ export default function ListeningMatch() {
     playXP()
     const xp = Math.round(XP_REWARDS.listening_match * (score.correct / Math.max(score.total, 1)))
     const earned = Math.max(5, xp)
-    const result = await awardXP(profile.id, earned, 'listening_match')
+    const result = await awardXP(profile.id, earned, 'listening_match', {}, lang)
     await refreshProfile()
     setXpEarned(earned)
     if (result?.leveledUp) setLevelUp(result.newLevel)
   }
+
+  if (gate.loading) return <div className="text-center text-indigo-200 py-12">Carregant…</div>
+  if (gate.locked) return <LockedStep />
 
   if (finished) {
     return (

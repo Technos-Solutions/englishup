@@ -33,10 +33,21 @@ CREATE TABLE achievements (
   UNIQUE(user_id, achievement_type)
 );
 
+-- Lesson progress (per-language guided learning path, e.g. Irish)
+CREATE TABLE lesson_progress (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  lang         TEXT NOT NULL,
+  step_id      TEXT NOT NULL,
+  completed_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, lang, step_id)
+);
+
 -- Row Level Security
-ALTER TABLE profiles     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sessions     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE achievements    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
 
 -- Policies: profiles
 CREATE POLICY "Anyone can view profiles for ranking"
@@ -57,6 +68,12 @@ CREATE POLICY "Anyone can view achievements for ranking"
   ON achievements FOR SELECT USING (true);
 CREATE POLICY "Users insert own achievements"
   ON achievements FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Policies: lesson_progress
+CREATE POLICY "Users view own lesson progress"
+  ON lesson_progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users insert own lesson progress"
+  ON lesson_progress FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION handle_new_user()

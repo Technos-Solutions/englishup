@@ -7,6 +7,8 @@ import { getIrregularVerbs } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { pickItems } from '../../lib/gameQueue'
 import LevelUpModal from '../ui/LevelUpModal'
+import { usePathGate } from '../../hooks/usePathGate'
+import LockedStep from '../path/LockedStep'
 
 function shuffle(arr) {
   const a = [...arr]
@@ -26,6 +28,7 @@ export default function VerbBlitz() {
   const { profile, refreshProfile } = useAuth()
   const { lang } = useLanguage()
   const eligibleVerbs = getIrregularVerbs(lang)
+  const gate = usePathGate(s => s.type === 'game' && s.gameKey === 'verb_blitz')
 
   const [mode, setMode] = useState(null) // 'mc' | 'oral'
   const [queue, setQueue] = useState([])
@@ -40,6 +43,9 @@ export default function VerbBlitz() {
   const [xpEarned, setXpEarned] = useState(0)
   const [levelUp, setLevelUp] = useState(null)
   const roundsTotal = 10
+
+  if (gate.loading) return <div className="text-center text-indigo-200 py-12">Carregant…</div>
+  if (gate.locked) return <LockedStep />
 
   function startGame(selectedMode) {
     const q = pickItems('eq_verbs', eligibleVerbs, roundsTotal)
@@ -89,7 +95,7 @@ export default function VerbBlitz() {
     const total = score.correct + score.wrong + 1
     const correct = score.correct + (lastCorrect ? 1 : 0)
     const xp = Math.max(3, Math.round(XP_REWARDS.verb_blitz * (correct / total)))
-    const result = await awardXP(profile.id, xp, 'verb_blitz')
+    const result = await awardXP(profile.id, xp, 'verb_blitz', {}, lang)
     await refreshProfile()
     setXpEarned(xp)
     if (result?.leveledUp) setLevelUp(result.newLevel)
