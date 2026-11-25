@@ -1,0 +1,117 @@
+// Irish (Gaeilge) content — a curated core set, not a 1:1 mirror of every
+// English scenario. Basic, well-established phrases; a native speaker
+// review is recommended before relying on this for serious study.
+
+export const SCENARIOS = [
+  {
+    id: 'ga-cafe',
+    icon: '☕',
+    title: 'Sa Chaifé (At the Café)',
+    description: 'Ordenar begudes i menjar',
+    level: 'A1',
+    aiRole: 'a friendly barista at a cosy café in Ireland, speaking Irish (Gaeilge)',
+    starter: 'Dia duit! Fáilte go dtí an caifé. Cad ba mhaith leat?',
+  },
+  {
+    id: 'ga-shopping',
+    icon: '🛍️',
+    title: 'Ag Siopadóireacht (Shopping)',
+    description: 'Comprar roba en una botiga',
+    level: 'A1',
+    aiRole: 'a helpful shop assistant in a clothes shop in Ireland, speaking Irish (Gaeilge)',
+    starter: 'Dia duit! An féidir liom cabhrú leat inniu?',
+  },
+  {
+    id: 'ga-directions',
+    icon: '🗺️',
+    title: 'Ag Lorg Treoracha (Asking Directions)',
+    description: 'Trobar el camí per la ciutat',
+    level: 'A1',
+    aiRole: 'a friendly local who knows the city very well, speaking Irish (Gaeilge)',
+    starter: 'Dia duit! An bhfuil tú caillte? An féidir liom cabhair a thabhairt duit?',
+  },
+  {
+    id: 'ga-meet-someone',
+    icon: '🤝',
+    title: 'Ag Bualadh le Duine Nua (Meet Someone New)',
+    description: 'Conèixer algú nou: feina, vida, aficions',
+    level: 'A2',
+    aiRole: 'a friendly, curious person you have just met at a social event in Ireland, speaking Irish (Gaeilge). Ask genuine follow-up questions.',
+    starter: 'Dia duit! Is mise Aoife — ní cuimhin liom gur bhuail muid le chéile cheana. Cad is ainm duit?',
+  },
+  {
+    id: 'ga-airport',
+    icon: '✈️',
+    title: 'Ag an Aerfort (At the Airport)',
+    description: 'Fer el check-in del vol',
+    level: 'A2',
+    aiRole: 'an airline check-in agent at an Irish airport, speaking Irish (Gaeilge)',
+    starter: 'Dia duit ar maidin! An bhfuil do phas agus do thicéad agat, le do thoil?',
+  },
+  {
+    id: 'ga-restaurant',
+    icon: '🍽️',
+    title: 'Sa Bhialann (At the Restaurant)',
+    description: 'Demanar un àpat complet',
+    level: 'A2',
+    aiRole: 'a friendly waiter at a restaurant in Ireland, speaking Irish (Gaeilge)',
+    starter: 'Dia duit! Fáilte romhat. Seo an biachlár duit. An bhfuil aon cheist agat faoi na béilí?',
+  },
+  {
+    id: 'ga-doctor',
+    icon: '🏥',
+    title: 'Ag an Dochtúir (At the Doctor)',
+    description: 'Descriure símptomes',
+    level: 'A2',
+    aiRole: 'a friendly doctor doing a check-up, speaking Irish (Gaeilge)',
+    starter: 'Dia duit! Suigh síos, le do thoil. Cad atá cearr inniu?',
+  },
+]
+
+export const LISTENING_WORDS = [
+  { word: 'madra',    options: ['madra', 'cat', 'éan', 'iasc'],         example: 'Tá madra agam.' },
+  { word: 'cat',      options: ['cat', 'madra', 'éan', 'capall'],       example: 'Tá an cat ina chodladh.' },
+  { word: 'teach',    options: ['teach', 'scoil', 'siopa', 'oifig'],    example: 'Tá mo theach mór.' },
+  { word: 'uisce',    options: ['uisce', 'tae', 'caife', 'bainne'],     example: 'Ar mhaith leat gloine uisce?' },
+  { word: 'bia',      options: ['bia', 'deoch', 'leabhar', 'carr'],     example: 'Tá an bia go blasta.' },
+  { word: 'dearg',    options: ['dearg', 'gorm', 'glas', 'buí'],        example: 'Tá carr dearg aici.' },
+  { word: 'máthair',  options: ['máthair', 'athair', 'deartháir', 'deirfiúr'], example: 'Tá mo mháthair go deas.' },
+  { word: 'leabhar',  options: ['leabhar', 'peann', 'fón', 'eochair'],  example: 'Léigh mé leabhar maith aréir.' },
+  { word: 'mór',      options: ['mór', 'beag', 'ard', 'íseal'],         example: 'Sin madra an-mhór!' },
+  { word: 'dochtúir', options: ['dochtúir', 'múinteoir', 'tiománaí', 'cócaire'], example: 'Dúirt an dochtúir go raibh orm scíth a ligean.' },
+  { word: 'maidin',   options: ['maidin', 'tráthnóna', 'oíche', 'nóin'],example: 'Maidin mhaith! Ar chodail tú go maith?' },
+  { word: 'traein',   options: ['traein', 'eitleán', 'long', 'bus'],    example: 'Imíonn an traein ag a naoi.' },
+  { word: 'airgead',  options: ['airgead', 'am', 'obair', 'spraoi'],    example: 'Níl go leor airgid agam.' },
+  { word: 'aimsir',   options: ['aimsir', 'séasúr', 'spéir', 'teas'],   example: 'Tá an aimsir go breá inniu.' },
+  { word: 'bricfeasta',options: ['bricfeasta', 'dinnéar', 'lón', 'sneaic'], example: 'Ithim bricfeasta gach lá ar a seacht.' },
+]
+
+export const SHADOWING_SENTENCES = {
+  A1: [
+    'Dia duit, is mise Seán.',
+    'Is maith liom caife agus tae.',
+    'Tá madra mór dearg aici.',
+    'Téimid ar scoil gach lá.',
+    'Tá an madra an-chairdiúil.',
+    'Is as an Spáinn mé.',
+    'An féidir leat cabhrú liom, le do thoil?',
+    'Tá an aimsir go breá inniu.',
+    'Tá beirt dheartháireacha agus deirfiúr amháin agam.',
+    'Cén t-am é?',
+  ],
+  A2: [
+    'Dúisím ar a seacht a chlog de ghnáth.',
+    'An deireadh seachtaine seo caite, chuaigh mé go dtí an phictiúrlann le mo chairde.',
+    'Tá sí ag foghlaim Gaeilge mar gur mhaith léi taisteal.',
+    'An féidir leat a rá liom cá bhfuil an banc is gaire?',
+    'Tá mé ag obair anseo le trí bliana anuas.',
+    'Dúnann an bhialann ag a deich a chlog ar an Domhnach.',
+  ],
+  B1: [
+    'Bhí mé ag smaoineamh go bhféadfá comhairle a thabhairt dom faoin scéal seo.',
+    'Caithfidh go ndearna sí dearmad ar an gcoinne mar ní bhfuair mé glaoch uaithi.',
+    'Dá mbeadh níos mó ama agam, dhéanfainn staidéar ar an ngiotár.',
+    'Tá an comhlacht ag fás go sciobtha le blianta beaga anuas.',
+    'In ainneoin na ndeacrachtaí, d\'éirigh leo an tionscadal a chríochnú in am.',
+  ],
+}

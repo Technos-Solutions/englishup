@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { TAG_TO_TOPIC } from '../../data/grammar'
+import { useLanguage } from '../../context/LanguageContext'
+import { getTagToTopic } from '../../data/content'
 
-function detectGrammarTopics(errors) {
-  if (!errors?.length) return []
+function detectGrammarTopics(errors, lang, TAG_TO_TOPIC) {
+  // These keyword heuristics are English-specific (they look for English
+  // grammar words like "is"/"have"/"didn't"), so only run them when the
+  // target language is English.
+  if (lang !== 'en' || !errors?.length) return []
   const found = new Set()
   for (const e of errors) {
     const text = `${e.original} ${e.correction} ${e.explanation}`.toLowerCase()
@@ -26,13 +30,15 @@ function detectGrammarTopics(errors) {
 
 export default function CorrectionPanel({ analysis, xpEarned, onClose, onContinue }) {
   const navigate = useNavigate()
+  const { lang } = useLanguage()
+  const TAG_TO_TOPIC = getTagToTopic(lang)
   if (!analysis) return null
 
   const scoreColor =
     analysis.fluency_score >= 80 ? 'text-emerald-600' :
     analysis.fluency_score >= 60 ? 'text-amber-600' : 'text-red-500'
 
-  const grammarSuggestions = detectGrammarTopics(analysis.errors)
+  const grammarSuggestions = detectGrammarTopics(analysis.errors, lang, TAG_TO_TOPIC)
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

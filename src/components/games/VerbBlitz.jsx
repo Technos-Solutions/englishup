@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
-import { IRREGULAR_VERBS } from '../../data/verbs'
+import { getIrregularVerbs } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { pickItems } from '../../lib/gameQueue'
 import LevelUpModal from '../ui/LevelUpModal'
@@ -23,7 +24,8 @@ function getOptions(correct, pool) {
 
 export default function VerbBlitz() {
   const { profile, refreshProfile } = useAuth()
-  const eligibleVerbs = IRREGULAR_VERBS
+  const { lang } = useLanguage()
+  const eligibleVerbs = getIrregularVerbs(lang)
 
   const [mode, setMode] = useState(null) // 'mc' | 'oral'
   const [queue, setQueue] = useState([])
@@ -204,7 +206,7 @@ export default function VerbBlitz() {
             <div className="bg-emerald-50 rounded-xl p-4">
               <p className="text-xs text-gray-400 mb-1">Past simple</p>
               <p className="text-2xl font-bold text-emerald-700">{current.past}</p>
-              <p className="text-xs text-gray-400 mt-2">Past participle: <span className="font-semibold">{current.participle}</span></p>
+              <p className="text-xs text-gray-400 mt-2">{lang === 'ga' ? 'Ainm briathartha' : 'Past participle'}: <span className="font-semibold">{current.participle}</span></p>
             </div>
             {current.example && (
               <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-800">

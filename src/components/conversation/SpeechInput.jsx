@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { startListening, isSpeechSupported } from '../../lib/speech'
 
-export default function SpeechInput({ onSubmit, disabled }) {
+export default function SpeechInput({ onSubmit, disabled, languageName = 'English' }) {
   const [mode, setMode] = useState('voice') // 'voice' | 'text'
   const [text, setText] = useState('')
   const [listening, setListening] = useState(false)
@@ -82,7 +82,7 @@ export default function SpeechInput({ onSubmit, disabled }) {
             value={text}
             onChange={e => setText(e.target.value)}
             disabled={disabled}
-            placeholder="Type your message in English…"
+            placeholder={`Type your message in ${languageName}…`}
             className="flex-1 bg-white/10 border border-white/15 text-white placeholder:text-indigo-300/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-40"
           />
           <button

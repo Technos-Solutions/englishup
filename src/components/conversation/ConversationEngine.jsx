@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { chatWithAI, analyzeConversation, buildConversationSystem, quickCorrection, generateKeyVocabulary } from '../../lib/groq'
 import { speak, stopSpeaking } from '../../lib/speech'
 import { awardXP, calculateConversationXP } from '../../lib/xp'
-import { SCENARIOS } from '../../data/scenarios'
+import { getScenarios } from '../../data/content'
 import { getRecentVocabulary, saveVocabulary } from '../../lib/vocabulary'
 import SpeechInput from './SpeechInput'
 import CorrectionPanel from './CorrectionPanel'
@@ -15,6 +16,7 @@ import LevelUpModal from '../ui/LevelUpModal'
 
 export default function ConversationEngine() {
   const { profile, refreshProfile } = useAuth()
+  const { lang, info } = useLanguage()
   const navigate = useNavigate()
   const [scenario, setScenario] = useState(null)
   const [tab, setTab] = useState('general')
@@ -36,7 +38,7 @@ export default function ConversationEngine() {
   const order = ['A1','A2','B1','B2','C1','C2']
   const userIdx = order.indexOf(profile?.level || 'A1')
 
-  const availableScenarios = SCENARIOS.filter(s => {
+  const availableScenarios = getScenarios(lang).filter(s => {
     if (s.category === 'office-client' || s.category === 'office-provider' || s.category === 'travel') return true
     const scenarioIdx = order.indexOf(s.level)
     return scenarioIdx <= userIdx + 1
@@ -51,7 +53,7 @@ export default function ConversationEngine() {
     setWarmupLoading(true)
     setWarmupWords([])
     try {
-      const words = await generateKeyVocabulary(s, profile?.level || 'A1')
+      const words = await generateKeyVocabulary(s, profile?.level || 'A1', lang)
       setWarmupWords(words)
     } catch (err) {
       console.error('Vocab warm-up failed', err)
@@ -84,7 +86,7 @@ export default function ConversationEngine() {
     setMessages(newMessages)
     setLoading(true)
 
-    const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary(), keyVocab.map(w => w.word))
+    const systemPrompt = buildConversationSystem(profile?.level || 'A1', scenario, getRecentVocabulary(), keyVocab.map(w => w.word), lang)
     // Cap how much history we resend — otherwise every turn gets more
     // expensive than the last and long conversations hit rate/context
     // limits. The AI only needs recent context to stay coherent anyway.
@@ -97,7 +99,7 @@ export default function ConversationEngine() {
     try {
       const [reply, correction] = await Promise.all([
         chatWithAI(groqMessages),
-        realtimeMode ? quickCorrection(text, profile?.level || 'A1') : Promise.resolve(null),
+        realtimeMode ? quickCorrection(text, profile?.level || 'A1', lang) : Promise.resolve(null),
       ])
       if (correction?.has_error) {
         setMessages(prev => prev.map((m, i) =>
@@ -135,7 +137,7 @@ export default function ConversationEngine() {
 
     setAnalyzing(true)
     try {
-      const result = await analyzeConversation(newMessages, profile?.level || 'A1')
+      const result = await analyzeConversation(newMessages, profile?.level || 'A1', lang)
       const xp = calculateConversationXP(result.fluency_score || 70)
       const awardResult = await awardXP(profile.id, xp, 'conversation', {
         fluency_score: result.fluency_score,
@@ -317,7 +319,7 @@ export default function ConversationEngine() {
                 : 'bg-white text-gray-900 border border-gray-100 rounded-bl-sm shadow-sm'
             }`}>
               {m.role === 'assistant'
-                ? <TranslatableMessage text={m.content} />
+                ? <TranslatableMessage text={m.content} lang={lang} />
                 : highlightErrors(m.content, m.correction)}
             </div>
             {m.role === 'assistant' && (
@@ -367,7 +369,7 @@ export default function ConversationEngine() {
       </div>
 
       {/* Input */}
-      <SpeechInput onSubmit={handleUserMessage} disabled={loading} />
+      <SpeechInput onSubmit={handleUserMessage} disabled={loading} languageName={info.nativeName} />
 
       {/* Correction panel */}
       {analysis && (

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { speak } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
-import { LISTENING_WORDS } from '../../data/scenarios'
+import { getListeningWords } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import { translateWord } from '../../lib/groq'
 import { pickItems } from '../../lib/gameQueue'
@@ -17,7 +18,7 @@ function shuffle(arr) {
   return a
 }
 
-function OptionButton({ opt, style, onClick, disabled }) {
+function OptionButton({ opt, style, onClick, disabled, lang }) {
   const [tooltip, setTooltip] = useState(null)
   const [pos, setPos] = useState({ x: 0, y: 0, above: false })
   const [visible, setVisible] = useState(false)
@@ -33,7 +34,7 @@ function OptionButton({ opt, style, onClick, disabled }) {
     setVisible(true)
     if (tooltip) return
     timerRef.current = setTimeout(async () => {
-      try { setTooltip(await translateWord(opt, '')) } catch {}
+      try { setTooltip(await translateWord(opt, '', lang)) } catch {}
     }, 250)
   }
 
@@ -75,7 +76,8 @@ function OptionButton({ opt, style, onClick, disabled }) {
 
 export default function ListeningMatch() {
   const { profile, refreshProfile } = useAuth()
-  const wordList = LISTENING_WORDS
+  const { lang } = useLanguage()
+  const wordList = getListeningWords(lang)
 
   const [queue, setQueue] = useState([])
   const [current, setCurrent] = useState(null)
@@ -188,6 +190,7 @@ export default function ListeningMatch() {
               style={style}
               onClick={() => handleSelect(opt)}
               disabled={!hasSpoken || !!selected}
+              lang={lang}
             />
           )
         })}

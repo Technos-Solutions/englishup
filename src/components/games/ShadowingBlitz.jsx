@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { speak, startListening, scorePhonetic, isSpeechSupported } from '../../lib/speech'
 import { awardXP, XP_REWARDS } from '../../lib/xp'
-import { SHADOWING_SENTENCES } from '../../data/scenarios'
+import { getShadowingSentences } from '../../data/content'
 import { pickItems } from '../../lib/gameQueue'
 import LevelUpModal from '../ui/LevelUpModal'
 
@@ -19,7 +20,9 @@ const STATES = { IDLE: 'idle', SPEAKING: 'speaking', LISTENING: 'listening', RES
 
 export default function ShadowingBlitz() {
   const { profile, refreshProfile } = useAuth()
+  const { lang } = useLanguage()
   const level = profile?.level || 'A1'
+  const SHADOWING_SENTENCES = getShadowingSentences(lang)
   const sentences = SHADOWING_SENTENCES[level] || SHADOWING_SENTENCES.A1
 
   const [queue, setQueue] = useState([])

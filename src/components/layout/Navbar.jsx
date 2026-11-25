@@ -3,14 +3,21 @@ import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { getLevelFromXP } from '../../lib/xp'
 import VoiceSettings from '../settings/VoiceSettings'
 
 export default function Navbar() {
   const { profile } = useAuth()
+  const { lang, setLang, info, languages } = useLanguage()
   const location = useLocation()
   const [showSettings, setShowSettings] = useState(false)
   const level = profile ? getLevelFromXP(profile.xp) : null
+
+  function cycleLang() {
+    const idx = languages.findIndex(l => l.code === lang)
+    setLang(languages[(idx + 1) % languages.length].code)
+  }
 
   const links = [
     { to: '/dashboard',   label: 'Home',     icon: '🏠' },
@@ -55,6 +62,13 @@ export default function Navbar() {
             </div>
           )}
           <button
+            onClick={cycleLang}
+            className="hidden sm:flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-indigo-100 px-2.5 py-1 rounded-full transition-colors"
+            title="Canvia l'idioma que estàs aprenent"
+          >
+            <span className="text-base">{info.flag}</span> {info.nativeName}
+          </button>
+          <button
             onClick={() => setShowSettings(true)}
             className="hidden sm:inline text-indigo-300/60 hover:text-violet-300 text-lg transition-colors"
             title="Personalització"
@@ -84,6 +98,13 @@ export default function Navbar() {
             <span>{l.label}</span>
           </Link>
         ))}
+        <button
+          onClick={cycleLang}
+          className="flex flex-col items-center text-xs gap-0.5 px-2 py-1 rounded-xl font-bold text-indigo-200/60"
+        >
+          <span className="text-xl">{info.flag}</span>
+          <span>{info.nativeName}</span>
+        </button>
         <button
           onClick={() => setShowSettings(true)}
           className="flex flex-col items-center text-xs gap-0.5 px-2 py-1 rounded-xl font-bold text-indigo-200/60"

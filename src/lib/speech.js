@@ -1,4 +1,5 @@
 import { buildAvailableCharacters } from '../data/characters.js'
+import { getLanguageInfo } from '../data/languages'
 
 export function isSpeechSupported() {
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
@@ -8,25 +9,39 @@ export function isTTSSupported() {
   return 'speechSynthesis' in window
 }
 
+function currentTargetLang() {
+  return localStorage.getItem('eu_target_lang') || 'en'
+}
+
 let _englishVoice = null
+let _voiceForLang = null
 
 function pickEnglishVoice() {
   const voices = window.speechSynthesis.getVoices()
   if (!voices.length) return
 
-  const charId = localStorage.getItem('eu_character')
-  if (charId) {
-    const chars = buildAvailableCharacters()
-    const found = chars.find(c => c.id === charId)
-    if (found) { _englishVoice = found.voice; return }
+  const lang = currentTargetLang()
+
+  // Character voices (Hugo, etc.) are English-only — only use them when
+  // the target language is English.
+  if (lang === 'en') {
+    const charId = localStorage.getItem('eu_character')
+    if (charId) {
+      const chars = buildAvailableCharacters()
+      const found = chars.find(c => c.id === charId)
+      if (found) { _englishVoice = found.voice; _voiceForLang = lang; return }
+    }
   }
 
+  const { speechLang } = getLanguageInfo(lang)
+  const base = speechLang.split('-')[0]
+
   _englishVoice =
-    voices.find(v => v.lang === 'en-GB' && v.name.toLowerCase().includes('google')) ||
-    voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google')) ||
-    voices.find(v => v.lang === 'en-GB') ||
-    voices.find(v => v.lang === 'en-US') ||
-    voices.find(v => v.lang.startsWith('en'))
+    voices.find(v => v.lang === speechLang && v.name.toLowerCase().includes('google')) ||
+    voices.find(v => v.lang === speechLang) ||
+    voices.find(v => v.lang.startsWith(base)) ||
+    (lang === 'en' ? voices.find(v => v.lang.startsWith('en')) : null)
+  _voiceForLang = lang
 }
 
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -45,13 +60,17 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 
 export function setCharacterVoice(voice) {
   _englishVoice = voice
+  _voiceForLang = currentTargetLang()
 }
 
 export function speak(text, onEnd) {
   if (!isTTSSupported()) return
+  // The target language may have changed (language switcher) since the
+  // voice was last picked — re-pick if so.
+  if (_voiceForLang !== currentTargetLang()) pickEnglishVoice()
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = _englishVoice?.lang || 'en-GB'
+  utterance.lang = _englishVoice?.lang || getLanguageInfo(currentTargetLang()).speechLang
   utterance.rate = 0.9
   utterance.pitch = 1
   if (_englishVoice) utterance.voice = _englishVoice
@@ -70,7 +89,7 @@ export function startListening(onResult, onError) {
     return null
   }
   const recognition = new SpeechRecognition()
-  recognition.lang = 'en-US'
+  recognition.lang = getLanguageInfo(currentTargetLang()).recognitionLang
   recognition.continuous = false
   recognition.interimResults = false
   recognition.maxAlternatives = 1
@@ -103,7 +122,7 @@ export function startListening(onResult, onError) {
 }
 
 export function scorePhonetic(original, spoken) {
-  const normalize = (s) => s.toLowerCase().replace(/[^a-z\s]/g, '').trim()
+  const normalize = (s) => s.toLowerCase().replace(/[^a-zÀ-ÿ\s]/g, '').trim()
   const a = normalize(original).split(' ')
   const b = normalize(spoken).split(' ')
   let matches = 0

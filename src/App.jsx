@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { LanguageProvider } from './context/LanguageContext'
 import { checkVersionOnLoad } from './lib/updateChecker'
 import Layout from './components/layout/Layout'
 import Login from './components/auth/Login'
@@ -41,6 +42,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <LanguageProvider>
       {updateReady && (
         <div className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-4 bg-indigo-600 px-4 py-2.5 text-white text-sm shadow-lg">
           <span className="font-medium">🚀 Nova versió disponible</span>
@@ -73,6 +75,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
+      </LanguageProvider>
     </AuthProvider>
   )
 }

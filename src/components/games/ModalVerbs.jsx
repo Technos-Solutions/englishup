@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
-import { MODAL_EXERCISES } from '../../data/modals'
+import { getModalExercises } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import LevelUpModal from '../ui/LevelUpModal'
 import { pickItems } from '../../lib/gameQueue'
@@ -18,7 +19,8 @@ function shuffle(arr) {
 
 export default function ModalVerbs() {
   const { profile, refreshProfile } = useAuth()
-  const eligible = MODAL_EXERCISES
+  const { lang } = useLanguage()
+  const eligible = getModalExercises(lang)
 
   const [mode, setMode] = useState(null)
   const [showCat, setShowCat] = useState(true)
@@ -102,7 +104,7 @@ export default function ModalVerbs() {
       <div className="max-w-md mx-auto text-center space-y-6 py-8">
         <div className="text-5xl">🔧</div>
         <h1 className="text-2xl font-bold text-white">Modal Verbs</h1>
-        <p className="text-indigo-200">can · should · must · would · might · could</p>
+        <p className="text-indigo-200">{lang === 'ga' ? 'is féidir · caithfidh · ba chóir · ba mhaith · b\'fhéidir' : 'can · should · must · would · might · could'}</p>
         <div className="grid grid-cols-1 gap-3">
           <button onClick={() => startGame('mc')}
             className="border-2 border-indigo-200 hover:border-indigo-400 bg-indigo-50 hover:bg-indigo-100 rounded-xl p-5 text-left transition-all">

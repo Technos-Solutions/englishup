@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { translateWord } from '../../lib/groq'
 
-function WordTooltip({ word, sentence }) {
+function WordTooltip({ word, sentence, lang }) {
   const [tooltip, setTooltip] = useState(null)
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -9,7 +9,7 @@ function WordTooltip({ word, sentence }) {
   const timerRef = useRef(null)
   const spanRef = useRef(null)
 
-  const clean = word.replace(/[^a-zA-Z]/g, '')
+  const clean = word.replace(/[^a-zA-ZÀ-ÿ]/g, '')
   if (!clean || clean.length < 2) return <span>{word}</span>
 
   async function handleEnter() {
@@ -22,7 +22,7 @@ function WordTooltip({ word, sentence }) {
     if (tooltip) return
     timerRef.current = setTimeout(async () => {
       setLoading(true)
-      try { setTooltip(await translateWord(clean, sentence)) }
+      try { setTooltip(await translateWord(clean, sentence, lang)) }
       catch (err) { console.error('WordTooltip: translateWord failed', err) }
       setLoading(false)
     }, 350)
@@ -64,7 +64,7 @@ function WordTooltip({ word, sentence }) {
   )
 }
 
-export default function TranslatableMessage({ text }) {
+export default function TranslatableMessage({ text, lang = 'en' }) {
   const tokens = text.match(/\S+|\s+/g) || []
 
   return (
@@ -72,7 +72,7 @@ export default function TranslatableMessage({ text }) {
       {tokens.map((token, i) =>
         /\s/.test(token)
           ? <span key={i}>{token}</span>
-          : <WordTooltip key={i} word={token} sentence={text} />
+          : <WordTooltip key={i} word={token} sentence={text} lang={lang} />
       )}
     </>
   )

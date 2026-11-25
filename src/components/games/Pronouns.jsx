@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { speak, startListening, isSpeechSupported } from '../../lib/speech'
 import { awardXP } from '../../lib/xp'
-import { PRONOUNS, PRONOUN_CATEGORIES } from '../../data/pronouns'
+import { getPronouns, getPronounCategories } from '../../data/content'
 import { playCorrect, playWrong, playXP } from '../../lib/sounds'
 import LevelUpModal from '../ui/LevelUpModal'
 import { pickItems } from '../../lib/gameQueue'
@@ -23,7 +24,9 @@ function getOptions(correct, pool) {
 
 export default function Pronouns() {
   const { profile, refreshProfile } = useAuth()
-  const eligible = PRONOUNS
+  const { lang, info } = useLanguage()
+  const eligible = getPronouns(lang)
+  const PRONOUN_CATEGORIES = getPronounCategories(lang)
 
   const [mode, setMode] = useState(null)
   const [category, setCategory] = useState('all')
@@ -103,7 +106,7 @@ export default function Pronouns() {
         <div className="text-center">
           <div className="text-5xl mb-2">👤</div>
           <h1 className="text-2xl font-bold text-white">Pronouns</h1>
-          <p className="text-indigo-200 mt-1">Català → English</p>
+          <p className="text-indigo-200 mt-1">Català → {info.nativeName}</p>
         </div>
 
         <div>
@@ -126,12 +129,12 @@ export default function Pronouns() {
           <button onClick={() => startGame('mc')}
             className="border-2 border-indigo-200 hover:border-indigo-400 bg-indigo-50 hover:bg-indigo-100 rounded-xl p-5 text-left transition-all">
             <div className="font-bold text-indigo-800 text-lg">📋 Multiple Choice</div>
-            <div className="text-sm text-indigo-600 mt-1">Veu el pronom en català i tries la traducció anglesa.</div>
+            <div className="text-sm text-indigo-600 mt-1">Veu el pronom en català i tries la traducció en {info.nativeName}.</div>
           </button>
           <button onClick={() => startGame('oral')}
             className="border-2 border-emerald-200 hover:border-emerald-400 bg-emerald-50 hover:bg-emerald-100 rounded-xl p-5 text-left transition-all">
             <div className="font-bold text-emerald-800 text-lg">🎙️ Oral</div>
-            <div className="text-sm text-emerald-600 mt-1">Di el pronom en anglès en veu alta.</div>
+            <div className="text-sm text-emerald-600 mt-1">Di el pronom en {info.nativeName} en veu alta.</div>
           </button>
         </div>
       </div>
@@ -214,7 +217,7 @@ export default function Pronouns() {
           <div className="space-y-3 pt-2">
             <button onClick={tryListen} disabled={listening}
               className={`w-full py-3 rounded-xl font-semibold transition-colors ${listening ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>
-              {listening ? '🎙️ Listening…' : '🎙️ Say in English'}
+              {listening ? '🎙️ Listening…' : `🎙️ Say in ${info.nativeName}`}
             </button>
             <button onClick={() => setRevealed(true)} className="text-sm text-gray-400 hover:text-gray-600 w-full text-center">
               Show answer

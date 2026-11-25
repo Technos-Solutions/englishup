@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk'
+import { getLanguageInfo } from '../data/languages'
 
 const groq = new Groq({
   apiKey: import.meta.env.VITE_GROQ_API_KEY,
@@ -37,8 +38,9 @@ export async function chatWithAI(messages) {
   return content
 }
 
-export async function analyzeConversation(studentMessages, level) {
-  const prompt = `You are an expert English teacher. A student at level ${level} just had a spoken conversation (transcribed by voice recognition). Analyze ONLY the student's messages.
+export async function analyzeConversation(studentMessages, level, lang = 'en') {
+  const langName = getLanguageInfo(lang).name
+  const prompt = `You are an expert ${langName} teacher. A student at level ${level} just had a spoken conversation (transcribed by voice recognition). Analyze ONLY the student's messages.
 
 IMPORTANT: These messages come from speech-to-text, so they have NO punctuation (no commas, periods, apostrophes). Do NOT flag missing punctuation or capitalization as errors — only flag real grammar mistakes: wrong verb tenses, incorrect word order, wrong prepositions, subject-verb agreement, wrong article (a/an/the), wrong word choice.
 
@@ -82,21 +84,23 @@ Respond with ONLY valid JSON (no markdown, no extra text):
 
 const translationCache = new Map()
 
-export async function translateWord(word, context) {
-  const key = word.toLowerCase().replace(/[^a-z]/g, '')
+export async function translateWord(word, context, lang = 'en') {
+  const key = word.toLowerCase().replace(/[^a-zÀ-ÿ]/g, '')
   if (!key || key.length < 2) return null
-  if (translationCache.has(key)) return translationCache.get(key)
+  const cacheKey = `${lang}:${key}`
+  if (translationCache.has(cacheKey)) return translationCache.get(cacheKey)
 
+  const langName = getLanguageInfo(lang).name
   try {
     const response = await groq.chat.completions.create({
       model: MODEL,
-      messages: [{ role: 'user', content: `Translate the English word "${word}" to Catalan. Context: "${context}". Reply with ONLY the Catalan translation, nothing else. Maximum 6 words.` }],
+      messages: [{ role: 'user', content: `Translate the ${langName} word "${word}" to Catalan. Context: "${context}". Reply with ONLY the Catalan translation, nothing else. Maximum 6 words.` }],
       temperature: 0,
       max_tokens: 100,
       reasoning_effort: 'low',
     })
     const translation = (response.choices[0].message.content || '').trim() || null
-    if (translation) translationCache.set(key, translation)
+    if (translation) translationCache.set(cacheKey, translation)
     return translation
   } catch (err) {
     console.error('translateWord failed', word, err)
@@ -104,13 +108,14 @@ export async function translateWord(word, context) {
   }
 }
 
-export async function quickCorrection(userMessage, level) {
-  const prompt = `English teacher checking a spoken message from a student (level ${level}): "${userMessage}"
+export async function quickCorrection(userMessage, level, lang = 'en') {
+  const langName = getLanguageInfo(lang).name
+  const prompt = `${langName} teacher checking a spoken message from a student (level ${level}): "${userMessage}"
 The message comes from speech-to-text so it has no punctuation or capitals — do NOT flag that.
 Only flag real grammar errors: wrong verb tense, wrong preposition, subject-verb disagreement, wrong article, wrong word order.
 If there is a real grammar error, return ONLY this JSON:
 {"has_error": true, "original": "...", "correction": "...", "tip": "...", "natural": "..."}
-Where "natural" is the full sentence said correctly and naturally in English.
+Where "natural" is the full sentence said correctly and naturally in ${langName}.
 If the message is correct (or only has punctuation/capitalisation issues), return ONLY: {"has_error": false}
 No markdown, no extra text.`
 
@@ -138,7 +143,17 @@ const LEVEL_PROFILES = {
   C2: 'Near-native complexity and pace, fully informal register when the scenario calls for it: slang, regional colloquialisms, sarcasm, banter. Do not simplify or sanitise for the student — talk exactly as you would with a native-speaking friend.',
 }
 
-export function buildConversationSystem(level, scenario, recentVocabulary = [], targetVocabulary = []) {
+const LEVEL_PROFILES_GA = {
+  A1: 'Very short, simple sentences (5-8 words). Present tense (an aimsir láithreach) only, avoid other tenses. No slang or idioms. Only the most common, everyday words — but still warm and natural, never stiff or robotic.',
+  A2: 'Short sentences (8-12 words). Present and past tense only. A tiny bit of very common casual language is OK but keep it simple and clear.',
+  B1: 'Natural sentence length. Mix present, past and the "ag + verbal noun" continuous construction. Casual fillers and reactions welcome. The occasional common idiom is fine if the meaning is clear from context.',
+  B2: 'Natural, flowing sentences, sometimes with a subordinate clause ("go", "mar", "nuair a"). Full range of tenses. Use common idioms and everyday colloquial Irish freely, exactly as a native speaker would talk with a friend.',
+  C1: 'Complex, loose, conversational sentences — interrupt yourself, trail off, react genuinely. Nuanced vocabulary mixed with real colloquial Irish and idioms, used freely and without explanation, like real native speakers talking casually.',
+  C2: 'Near-native complexity and pace, fully informal register when the scenario calls for it: regional dialect flavour (Gaeltacht colloquialisms), sarcasm, banter. Do not simplify or sanitise for the student — talk exactly as you would with a native-speaking friend.',
+}
+
+export function buildConversationSystem(level, scenario, recentVocabulary = [], targetVocabulary = [], lang = 'en') {
+  const langName = getLanguageInfo(lang).name
   const vocabNote = recentVocabulary.length > 0
     ? `\n- The student has recently used these words: ${recentVocabulary.slice(0, 25).join(', ')}. Naturally introduce NEW vocabulary they haven't seen yet, appropriate for level ${level}.`
     : `\n- Introduce varied, rich vocabulary appropriate for level ${level}.`
@@ -151,39 +166,41 @@ export function buildConversationSystem(level, scenario, recentVocabulary = [], 
     ? `\n\nAccurate city reference (use this to give correct information):\n${scenario.cityFacts}`
     : ''
 
-  const levelProfile = LEVEL_PROFILES[level] || LEVEL_PROFILES.A1
+  const profiles = lang === 'ga' ? LEVEL_PROFILES_GA : LEVEL_PROFILES
+  const levelProfile = profiles[level] || profiles.A1
 
-  return `You are a real person having an everyday spoken conversation, not a textbook or a formal teacher. The student's English level is ${level}.
+  return `You are a real person having an everyday spoken conversation, not a textbook or a formal teacher. Respond ONLY in ${langName}. The student's ${langName} level is ${level}.
 Scenario: ${scenario.description}
 Role: ${scenario.aiRole}${cityNote}
 
 Language level for ${level} (follow this closely): ${levelProfile}
 
 How to sound real:
-- Talk the way people actually talk on the street in this situation — casual, warm, with natural rhythm, not polished "textbook English"
-- React genuinely to what the student says before moving on (surprise, agreement, a laugh, "oh nice", "wait really?") instead of just asking the next scripted question
+- Talk the way people actually talk on the street in this situation — casual, warm, with natural rhythm, not polished "textbook ${langName}"
+- React genuinely to what the student says before moving on (surprise, agreement, a laugh) instead of just asking the next scripted question
 - Vary your sentence length and structure like a real person would — don't make every reply the same shape
-- Occasional natural fillers and reactions are good ("yeah", "honestly", "I mean") when the level allows it
+- Occasional natural fillers and reactions are good when the level allows it
 
 Rules:
 - Keep responses to 2-3 sentences max
 - Ask one follow-up question to keep conversation going
 - Stay in character for the scenario and role at all times
-- NEVER correct errors mid-conversation — just model correct, natural English by example
+- NEVER correct errors mid-conversation — just model correct, natural ${langName} by example
 - For travel scenarios: give accurate, helpful tourist information based on the city facts provided${vocabNote}${targetNote}`
 }
 
-export async function generateKeyVocabulary(scenario, level) {
-  const prompt = `You are preparing a student (English level ${level}) for a roleplay conversation.
+export async function generateKeyVocabulary(scenario, level, lang = 'en') {
+  const langName = getLanguageInfo(lang).name
+  const prompt = `You are preparing a student (${langName} level ${level}) for a roleplay conversation.
 Scenario: ${scenario.description}
 The AI will play: ${scenario.aiRole}
 
-Pick 6 English words or short phrases that are likely to come up and are genuinely useful for this specific scenario, appropriate for level ${level}.
+Pick 6 ${langName} words or short phrases that are likely to come up and are genuinely useful for this specific scenario, appropriate for level ${level}.
 
 Respond with ONLY valid JSON, no markdown, no extra text:
 [{"word": "...", "translation_ca": "...", "example": "..."}]
 
-Where translation_ca is the Catalan translation, and example is a short natural English sentence using the word in this scenario's context.`
+Where translation_ca is the Catalan translation, and example is a short natural ${langName} sentence using the word in this scenario's context.`
 
   const response = await groq.chat.completions.create({
     model: MODEL,

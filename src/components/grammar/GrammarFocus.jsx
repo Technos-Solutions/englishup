@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { speak } from '../../lib/speech'
-import { GRAMMAR_TOPICS } from '../../data/grammar'
+import { getGrammarTopics } from '../../data/content'
 import { LEVELS } from '../../data/levels'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
@@ -58,7 +59,7 @@ function QuizSection({ quiz }) {
   )
 }
 
-function TopicDetail({ topic }) {
+function TopicDetail({ topic, langName }) {
   const [activeForm, setActiveForm] = useState(topic.table[0].form)
   const [tab, setTab] = useState('table')
   const rows = topic.table.find(t => t.form === activeForm)?.rows || []
@@ -104,7 +105,7 @@ function TopicDetail({ topic }) {
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                   <th className="text-left px-4 py-3">Català</th>
-                  <th className="text-left px-4 py-3">English</th>
+                  <th className="text-left px-4 py-3">{langName}</th>
                   <th className="text-left px-4 py-3 hidden sm:table-cell">Example</th>
                 </tr>
               </thead>
@@ -147,6 +148,8 @@ function TopicDetail({ topic }) {
 
 export default function GrammarFocus() {
   const { profile } = useAuth()
+  const { lang, info } = useLanguage()
+  const GRAMMAR_TOPICS = getGrammarTopics(lang)
   const [searchParams] = useSearchParams()
   const initialTag = searchParams.get('topic')
   const initialTopic = GRAMMAR_TOPICS.find(t => t.tag === initialTag) || null
@@ -164,7 +167,7 @@ export default function GrammarFocus() {
         <button onClick={() => setSelected(null)} className="text-sm text-violet-300 hover:text-violet-200 flex items-center gap-1">
           ← All topics
         </button>
-        <TopicDetail topic={selected} />
+        <TopicDetail topic={selected} langName={info.nativeName} />
       </div>
     )
   }
